@@ -1,32 +1,180 @@
 const express = require('express');
-const fileUpload = require('express-fileupload');
+const ejs = require("ejs");
+const session = require('express-session')
+const bodyParser = require('body-parser');
+const mongoose = require("mongoose");
+var crypto = require('crypto');
 
 const app = express();
-app.use(express.static("public"));
-app.use(fileUpload());
+mongoose.connect("mongodb+srv://terminator:testdb@accounts-0uu7d.mongodb.net/Users", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+});
+app.use(session({
+    secret: "Shh, its a secret!",
+    resave: true,
+    saveUninitialized: true
+}));
+app.set('view engine', 'ejs');
+app.use(express.static('public/index'));
+app.use(express.static('public/upload'));
+
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+
+const loginUsers = new mongoose.Schema({
+    email: String,
+    password: String,
+    fullName:String,
+    image:String
+});
+const users = mongoose.model("user", loginUsers);
 
 
+function saveUser(data, res) {
+    users.findOne({
+        email: data.email
+    }, function (err, user) {
+        if (!user) {
+            const newUser = new users({
+                fullName: data.fullName,
+                email: data.email,
+                password: crypto.createHash('sha256').update(data.password).digest('hex').toString()
+            });
+            newUser.save();
+        } else {
+            return res.redirect("/sign-up");
+        }
+    });
 
-app.post('/upload', function (req, res) {
-    if (!req.files || Object.keys(req.files).length === 0) {
-        return res.status(400).send('No files were uploaded.');
-    }
-    let sampleFile = req.files.sampleFile;
-    sampleFile.mv(__dirname + '/public/filename.jpg', function (err) {
-        if (err)
-            return res.status(500).send(err);
+}
 
-        res.send('File uploaded!');
+/*--------------search user-------------------*/
+
+
+app.post('/search', (req, res) => {
+    res.render('search');
+});
+
+app.post('/searchuser',(req,res)=>{
+    console.log(req.body.temp);
+    users.find({fullName: new RegExp(req.body.temp, "i")},function(err,user){
+            console.log(user);
+            res.send(user);
     });
 });
 
-app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/views/search.html');
+/*-------------------show profile-----------------------*/
+
+app.post('/showprofile',(req,res)=>{
+    console.log(req.body);
+    users.findOne({_id: req.body["hello"]},function(err,user){
+        res.redirect("/"+user.fullName)
+        console.log(user);
+});
 });
 
-app.post('/add/:id', function (req, res) {
-    console.log(req.params.id);
-
+/*---------------user search----------------------*/
+app.get("/:customListName",function(req,res){
+    users.findOne({fullName:req.params.customListName},function(err,results){
+        if(!err){
+            if(!results){
+                res.redirect("/");
+            } else {
+                res.render("profile", {
+                    name: results.fullName,
+                    image: results.image
+                });
+            }
+        }
+    });
+    console.log(req.params.customListName);
 });
 
-app.listen('3000');
+
+/*---------------------sign up---------------------*/
+
+app.post('/sign-up', (req, res) => {
+    res.render('sign-up');
+});
+
+app.post('/save-user', (req, res) => {
+    saveUser(req.body, res);
+    res.redirect("/loginP");
+});
+
+/*------------------Login---------------------*/
+
+
+app.post("/loginP", (req, res) => {
+    res.sendFile(__dirname + "/signin.html");
+});
+
+app.get("/loginP", (req, res) => {
+    res.sendFile(__dirname + "/signin.html");
+});
+
+app.get('/', (req, res) => {
+    if(req.session.uid)
+    res.render('logout');
+    else
+    res.render('index');
+});
+
+app.get('/log', (req, res) => {
+    console.log("gLog reqest", req.session);
+    if (!req.session.uid)
+        return res.redirect("/loginP")
+    res.render('logout');
+});
+app.post('/login', (req, res) => {
+    const e = req.body.email;
+    const p = req.body.pname;
+    var hvalue = crypto.createHash('sha256').update(p).digest('hex').toString();
+    console.log(req.body, e, hvalue);
+    if (e && p) {
+        users.findOne({
+            email: e
+        }, function (err, user) {
+            var k = 0,
+                j = 0;
+            console.log(user);
+            if (!user) {
+                res.send({
+                    "email": -1,
+                    "successfull": false
+                });
+            } else if (user.email === e && user.password === hvalue) {
+
+                req.session.uid = user.id;
+                console.log("setting cookie", req.session, user);
+                res.send({
+                    "successfull": true
+                });
+
+            } else {
+                if ((user.email !== e))
+                    k = 1;
+                if ((user.password !== p))
+                    j = 1;
+                res.send({
+                    "email": k,
+                    "password": j,
+                    "successfull": false
+                });
+            }
+        });
+    }
+});
+
+app.post("/logOut", (req, res) => {
+    req.session.destroy();
+    res.redirect("/");
+});
+
+
+
+app.listen(3000, () => {
+    console.log("Server started!");
+});
