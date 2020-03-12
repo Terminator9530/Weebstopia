@@ -45,7 +45,7 @@ app.get('/settings',function(req,res){
 });
 var file;
 var flag=0;
-app.post('/download',function(req,res){
+app.post('/download',function(req,res){z
     if(req.files)
     {
         console.log(req.files);
