@@ -132,6 +132,23 @@ app.get("/getlist",function(req,res){
     });
 });
 
+/*-------------------------delete list-----------------------------*/
+
+app.get("/deletelist",function(req,res){
+    res.render("deleteList");
+});
+
+app.post("/del",async function(req,res){
+    console.log(req.body);
+    for(i in req.body){
+        await detail.update(
+            {_id:req.session.uid},
+            { $pull: { list:{listname:i}} }
+        );
+    }
+    res.send("Get");
+});
+
 
 /*------------------------create list------------------------------*/
 
