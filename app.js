@@ -16,7 +16,7 @@ const fs = require('fs').promises;
 
 
 const app = express();
-mongoose.connect('mongodb+srv://admin-necro:2634662@accounts-0uu7d.mongodb.net/Users', {
+mongoose.connect('mongodb+srv://terminator:testdb@accounts-0uu7d.mongodb.net/Users', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
@@ -47,13 +47,11 @@ const userDetail = new mongoose.Schema({
     userName: String,
     email: String,
     password: String,
-    profilePic: String
+    profilePic: String,
+    list:Array
 });
-const detail = mongoose.model('detail', userDetail);
-app.use(upload({
-    safeFileNames: true,
-    preserveExtension: true
-}));
+const detail = mongoose.model('user', userDetail);
+app.use(upload());
 
 
 // -------------------------------------------------- root route -------------------------------------------------- //
@@ -69,6 +67,105 @@ app.get('/', (req, res) => {
             });
         });
     }
+});
+
+/*------------------Search Anime--------------------*/
+
+app.get("/searchanime",function(req,res){
+    res.render("searchanim");
+});
+
+app.post("/add",function(req,res){
+    if(!req.session.uid)
+    return res.redirect("/loginP");
+    detail.findOne({_id:req.session.uid},async function(err,data){
+        if(!err){
+            var flag=0,index_i,index_j;
+            for(i in data.list){
+                if(req.body.listvalue==data.list[i].listname)
+                {
+                    index_i=i;
+                    console.log(index_i);
+                    console.log("aa gaya");
+                    for(j in data.list[i].lists){
+                        if(req.body.id==data.list[i].lists[j].id)
+                        {
+                            index_j=j;
+                            flag=1;
+                            //console.log("index_i,index_j");
+                            break;
+                        }
+                    }
+                    break;
+                }
+                
+            }
+            console.log(flag);
+            if (flag){
+                //http://api.jikan.moe/v3/anime/1535
+            }
+            else{
+                data.list[index_i].lists.push({id:req.body.id,image_url:req.body.img,title:req.body.title});
+                //console.log(data.list[index_i].lists);
+                
+                await detail.updateOne({_id:req.session.uid}, data);
+                /*await detail.findOne({_id:req.session.uid},function(err,d){
+                    console.log(data.list[0].lists);
+                });*/
+            }
+        } else {
+            res.send(err);
+        }
+        res.send("correct")
+    })
+});
+
+app.get("/showlist",function(req,res){
+    detail.findOne({_id:req.session.uid},function(err,data){
+        res.render("list",{listx:data.list});
+    });
+});
+
+app.get("/getlist",function(req,res){
+    detail.findOne({_id:req.session.uid},function(err,data){
+        res.send({listx:data.list});
+    });
+});
+
+
+/*------------------------create list------------------------------*/
+
+app.post("/create-list",function(req,res){
+    console.log(req.body);
+    detail.findOne({_id:req.session.uid},async function(err,data){
+        var flag=0;
+        for(i in data.list){
+            if(data.list[i].listname==req.body.listID)
+            {
+                flag=1;
+                break;
+            }
+        }
+        if(!flag){
+            await detail.updateOne({_id:req.session.uid},{$push:{list:{listname:req.body.listID,lists:[]}}});
+            await detail.findOne({_id:req.session.uid},function(err,d){
+                console.log(d.list);
+                res.send("Test");
+            });
+        }
+    });
+});
+
+
+
+/*-------------------------search list----------------------------*/
+app.post("/searchlist",function(req,res){
+    detail.findOne({_id:req.session.uid},function(err,data){
+        console.log(data.list,data.list.length,data.list[0].listname);
+        // res.send("found");
+        res.send({a:data.list});
+        // res.send({a})
+    });
 });
 
 
