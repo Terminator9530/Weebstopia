@@ -26,20 +26,21 @@
       </style>
 </head>
 
-<body>
-    <div class="jumbotron">
+<body class="jumbotron">
+    <div>
         <center>
-            <div class="row">
+            <div class="row btn-group">
                 <% listx.forEach(function(list){ %>
-                    <button id="btn<%= list.listname %>" class="btn btn-outline-primary col-1 btn-group" role="group" onclick=show("<%= list.listname %>")><%= list.listname %></button>
+                    <button id="btn<%= list.listname %>" class="btn btn-outline-primary" role="group" onclick=show("<%= list.listname %>")><%= list.listname %></button>
                 <% }); %>
-            </div><br>
+            </div>
+        </center><br><br>
             <div id="list">
             <% listx.forEach(function(list){ %>
                 <div class="row" style="display: none;" id=<%= list.listname %>>
                 <% list.lists.forEach(function(temp){ %>
                 <span class="card col-2 col-md-2" style="width: 18rem;">
-                    <img class="card-img-top" src=<%= temp.image_url %> alt="Card image cap" style="height:25rem;">
+                    <img class="card-img-top" src=<%= temp.image_url %> alt="Card image cap" style="height:15rem;width:100%;">
                     <span class="card-body">
                       <center><button class="card-title makebuttonlink" style="cursor:pointer;"><%= temp.title %></button></center>
                     </span>
@@ -48,7 +49,6 @@
                 </div>
             <% }); %>
             </div>
-        </center>
     </div>
 
     <!-- Optional JavaScript -->
@@ -71,7 +71,7 @@
             {
                 //console.log(i,info.listx[i].listname);
                 if(info.listx[i].listname==txt){
-                    document.getElementById(info.listx[i].listname).style.display="inline";
+                    document.getElementById(info.listx[i].listname).style.display="";
                     console.log("btn"+info.listx[i].listname);
                     $("#btn"+info.listx[i].listname).addClass("active");
 
