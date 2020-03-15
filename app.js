@@ -10,13 +10,15 @@ const crypto = require('crypto');
 const MongoStore = require('connect-mongo')(session);
 const upload = require('express-fileupload');
 const fs = require('fs').promises;
+const dotenv = require('dotenv');
 
 
 // -------------------------------------------------- server settings -------------------------------------------------- //
 
 
 const app = express();
-mongoose.connect('mongodb+srv://terminator:testdb@accounts-0uu7d.mongodb.net/Users', {
+dotenv.config();
+mongoose.connect(process.env.CONN, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
