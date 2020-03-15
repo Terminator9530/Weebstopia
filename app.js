@@ -150,6 +150,33 @@ app.post("/del",async function(req,res){
 });
 
 
+/*-------------------------Edit list-------------------------------*/
+
+app.get("/editlist",function(req,res){
+    detail.findOne({_id:req.session.uid},function(err,data){
+        res.render("editlist",{listx:data.list});
+    });
+});
+
+app.post("/deleteListItems",function(req,res){
+    console.log(req.body);
+    detail.findOne({_id:req.session.uid},async function(err,data){
+        for(i in data.list){
+            for(j in data.list[i].lists){
+                if((data.list[i].listname+data.list[i].lists[j].title) in req.body)
+                {
+                    console.log("deleted");
+                    delete data.list[i].lists[j];
+                    console.log(j,data.list[i].lists);
+                }
+            }
+        }
+        //await detail.updateOne({_id:req.session.uid}, data);
+    });
+    res.send("Done");
+});
+
+
 /*------------------------create list------------------------------*/
 
 app.post("/create-list",function(req,res){
