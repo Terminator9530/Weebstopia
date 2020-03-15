@@ -59,7 +59,7 @@ app.use(upload());
 // -------------------------------------------------- root route -------------------------------------------------- //
 
 
-app.get('/', (req, res) => {
+app.get('/',(req, res) => {
     if (!req.session.uid) {
         res.render('index');
     } else {
@@ -344,22 +344,18 @@ app.get('/settings', (req, res) => {
 
 app.post('/save-settings', async (req, res) => {
     var message = [],
-        bg = [],
-        text = [];
+        bg = []
     const user = await detail.findById(req.session.uid);
     if (!(req.body.newp1 == '' && req.body.newp2 == '')) {
         if (crypto.createHash('sha256').update(req.body.oldp).digest('hex').toString() != user.password) {
             message.push('Incorrect Password!');
-            bg.push('bg-danger');
-            text.push('text-white');
+            bg.push('danger');
         } else if (req.body.newp1 != req.body.newp2) {
             message.push('Passwords do not match!');
-            bg.push('bg-danger');
-            text.push('text-white');
+            bg.push('danger');
         } else {
             message.push('Password updated successfully!');
-            bg.push('bg-success');
-            text.push('text-white');
+            bg.push('success');
             user.password = crypto.createHash('sha256').update(req.body.newp1).digest('hex').toString();
         }
     }
@@ -369,12 +365,10 @@ app.post('/save-settings', async (req, res) => {
         });
         if (found) {
             message.push('Account with that e-mail already exists!');
-            bg.push('bg-danger');
-            text.push('text-white');
+            bg.push('danger');
         } else {
             message.push('E-mail updated successfully!');
-            bg.push('bg-success');
-            text.push('text-white');
+            bg.push('success');
             user.email = req.body.email;
         }
     }
@@ -384,12 +378,10 @@ app.post('/save-settings', async (req, res) => {
         });
         if (found) {
             message.push('Account with that user name already exists!');
-            bg.push('bg-danger');
-            text.push('text-white');
+            bg.push('danger');
         } else {
             message.push('User name updated successfully!');
-            bg.push('bg-success');
-            text.push('text-white');
+            bg.push('success');
             user.userName = req.body.userName;
         }
     }
@@ -401,8 +393,7 @@ app.post('/save-settings', async (req, res) => {
         pic.name = 'profile-pic-' + req.session.uun + '-' + pic.name;
         await pic.mv(__dirname + '/public/upload/' + pic.name);
         message.push('Profile picture updated successfully!');
-        bg.push('bg-success');
-        text.push('text-white');
+        bg.push('success');
         user.profilePic = pic.name;
     }
     await detail.updateOne({
@@ -415,7 +406,6 @@ app.post('/save-settings', async (req, res) => {
             res.render('settings', {
                 message: message,
                 bg: bg,
-                text: text,
                 details: user
             });
         });
@@ -441,20 +431,20 @@ app.get('/search-user', (req, res) => {
 app.post('/showprofile',(req,res)=>{
     console.log(req.body);
     detail.findOne({_id: req.body["hello"]},function(err,user){
-        res.redirect("/"+user.userName)
+        res.redirect("/users/"+user.userName)
         console.log(user);
 });
 });
 
 app.post('/search-user', (req, res) => {
     detail.find({
-        fullName: new RegExp(req.body.temp, 'i')
+        userName: new RegExp(req.body.temp, 'i')
     }, (err, user) => {
         res.send(user);
     });
 });
 
-app.get('/:userName', (req, res) => {
+app.get('/users/:userName', (req, res) => {
     detail.findOne({
         userName: req.params.userName
     }, (err, user) => {

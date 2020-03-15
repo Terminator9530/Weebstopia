@@ -30,7 +30,7 @@ $(document).ready(function () {
           var txt=`<span class="card col-6 col-md-3" style="width: 18rem;">
           <img class="card-img-top" src=`+user.profilePic+` alt="Card image cap">
           <span class="card-body">
-            <center><button class="card-title makebuttonlink" style="cursor:pointer;" onclick="this.form.submit()" value=`+user._id+` name='hello'>`+user.fullName+`</button></center>
+            <center><button class="card-title makebuttonlink" style="cursor:pointer;" onclick="this.form.submit()" value=`+user._id+` name='hello'>`+user.userName+`</button></center>
           </span>
   </span>`;
             //text="<button onclick='this.form.submit()' name='hello' value="+user._id+">"+user.fullName+"</button>";
