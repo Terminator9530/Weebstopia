@@ -160,18 +160,20 @@ app.get("/editlist",function(req,res){
 
 app.post("/deleteListItems",function(req,res){
     console.log(req.body);
-    detail.findOne({_id:req.session.uid},async function(err,data){
+    detail.findOne({_id:req.session.uid}, 'list', async function(err,data){
+        // delete in which? ind = 3
         for(i in data.list){
             for(j in data.list[i].lists){
                 if((data.list[i].listname+data.list[i].lists[j].title) in req.body)
                 {
                     console.log("deleted");
-                    delete data.list[i].lists[j];
+                    data.list[i].lists.splice(j,1);
+                    // delete [j];
                     console.log(j,data.list[i].lists);
                 }
             }
         }
-        //await detail.updateOne({_id:req.session.uid}, data);
+        await detail.updateOne({_id:req.session.uid}, data);
     });
     res.send("Done");
 });

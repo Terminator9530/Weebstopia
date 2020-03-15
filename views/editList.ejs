@@ -73,9 +73,10 @@
     </script>
     <script>
         var info;
-
+        var currentList = "";
         function show(txt) {
             //console.log(txt);
+            currentList = txt;
             for (i in info.listx) {
                 //console.log(i,info.listx[i].listname);
                 if (info.listx[i].listname == txt) {
