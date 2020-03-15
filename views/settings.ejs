@@ -45,7 +45,7 @@
 <body>
     <form method="POST" action="/save-settings" enctype="multipart/form-data">
         <% for(i=0;i<message.length;i++) { %>
-            <div class="alert alert-<%= bg[i] %> alert-dismissible fade show" role="alert">
+            <div class="alert alert-<%= bg[i] %> alert-dismissible fade show" role="alert" style="margin-bottom: -16px;">
                 <%= message[i] %>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                   <span aria-hidden="true">&times;</span>

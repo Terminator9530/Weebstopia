@@ -310,8 +310,7 @@ app.post('/check-user', (req, res) => {
         } else {
             res.render('log-in', {
                 message: 'Incorrect user name or password!',
-                bg: 'bg-danger',
-                text: 'text-white'
+                bg: 'danger'
             });
         }
     });
@@ -334,8 +333,7 @@ app.get('/settings', (req, res) => {
         detail.findById(req.session.uid, (err, user) => {
             res.render('settings', {
                 message: ['Account Settings'],
-                bg: 'bg-white',
-                text: 'text-secondary',
+                bg: ["primary"],
                 details: user
             });
         });
