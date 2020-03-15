@@ -438,15 +438,23 @@ app.get('/search-user', (req, res) => {
     res.render('search');
 });
 
+app.post('/showprofile',(req,res)=>{
+    console.log(req.body);
+    detail.findOne({_id: req.body["hello"]},function(err,user){
+        res.redirect("/"+user.userName)
+        console.log(user);
+});
+});
+
 app.post('/search-user', (req, res) => {
     detail.find({
-        fullName: new RegExp(req.body.userSearch, 'i')
+        fullName: new RegExp(req.body.temp, 'i')
     }, (err, user) => {
         res.send(user);
     });
 });
 
-app.get('/users/:userName', (req, res) => {
+app.get('/:userName', (req, res) => {
     detail.findOne({
         userName: req.params.userName
     }, (err, user) => {
