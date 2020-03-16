@@ -51,8 +51,18 @@ const userDetail = new mongoose.Schema({
     password: String,
     profilePic: String,
     list: Array,
-    followers:Array,
-    following:Array
+    followers: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'user'
+        }
+    }],
+    following: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'user'
+        }
+    }]
 });
 const detail = mongoose.model('user', userDetail);
 app.use(upload());
@@ -245,6 +255,55 @@ app.post("/create-list", function (req, res) {
 });
 
 
+/*--------------------------show followers-------------------------*/
+
+app.post("/showfollowers", async function (req, res) {
+    var followers = [];
+    await detail.findOne({
+        _id: req.session.uid
+    }, function (err, data) {
+        data.followers.forEach(async element => {
+            await detail.findOne({
+                _id: element
+            }, function (err, fdata) {
+                followers.push({
+                    username: fdata.userName,
+                    image: fdata.profilePic
+                });
+            });
+        });
+    });
+    console.log(followers);
+    res.render("follow", {
+        info: followers,
+        status: "followers"
+    });
+});
+
+/*--------------------------show following-------------------------*/
+
+app.post("/showfollowing", async function (req, res) {
+    var following = [];
+    await detail.findOne({
+        _id: req.session.uid
+    }, 'following').populate("following.user", "userName profilePic").exec(function (err, data) {
+        if (data) {
+            console.log(data.following);
+            data.following.forEach((ele)=>{
+                following.push({userName:ele.user.userName,img:ele.user.profilePic});
+                console.log(following);
+            });
+            console.log(following);
+    res.render("follow", {
+         info: following,
+         status: "following"
+     });
+        }
+    });
+   // res.sendStatus(200)
+});
+
+
 
 /*-------------------------search list----------------------------*/
 app.post("/searchlist", function (req, res) {
@@ -268,14 +327,14 @@ app.post('/follow-user', async (req, res) => {
             _id: req.session.uid
         }, {
             $push: {
-                following: req.body.id
+                following: {user: req.body.id}
             }
         });
         detail.updateOne({
             _id: req.body.id
         }, {
             $push: {
-                followers: req.session.uid
+                followers: {user: req.session.uid}
             }
         }, () => {
             res.send('1');
@@ -285,14 +344,14 @@ app.post('/follow-user', async (req, res) => {
             _id: req.session.uid
         }, {
             $pull: {
-                following: req.body.id
+                following: {user: req.body.id}
             }
         });
         detail.updateOne({
             _id: req.body.id
         }, {
             $pull: {
-                followers: req.session.uid
+                followers: {user: req.session.uid}
             }
         }, () => {
             res.send('-1');
@@ -537,16 +596,15 @@ app.get('/users/:userInfo', (req, res) => {
             res.sendStatus(500);
         else if (user == null)
             res.sendStatus(404);
-        else
-        {
+        else {
             var val;
-            if(req.params.userInfo==req.session.uun)
-            val=1;
+            if (req.params.userInfo == req.session.uun)
+                val = 1;
             else
-            val=0;
+                val = 0;
             res.render('view-profile', {
                 details: user,
-                exists:val,
+                exists: val,
                 follows: user.followers.indexOf(req.session.uid)
             });
         }
