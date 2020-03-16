@@ -50,7 +50,9 @@ const userDetail = new mongoose.Schema({
     email: String,
     password: String,
     profilePic: String,
-    list: Array
+    list: Array,
+    followers:Array,
+    following:Array
 });
 const detail = mongoose.model('user', userDetail);
 app.use(upload());
@@ -256,6 +258,46 @@ app.post("/searchlist", function (req, res) {
         });
         // res.send({a})
     });
+});
+
+/*---------------------------------follow user-----------------------------------*/
+
+app.post('/follow-user', async (req, res) => {
+    if (req.body.follows == '-1') {
+        await detail.updateOne({
+            _id: req.session.uid
+        }, {
+            $push: {
+                following: req.body.id
+            }
+        });
+        detail.updateOne({
+            _id: req.body.id
+        }, {
+            $push: {
+                followers: req.session.uid
+            }
+        }, () => {
+            res.send('1');
+        });
+    } else {
+        await detail.updateOne({
+            _id: req.session.uid
+        }, {
+            $pull: {
+                following: req.body.id
+            }
+        });
+        detail.updateOne({
+            _id: req.body.id
+        }, {
+            $pull: {
+                followers: req.session.uid
+            }
+        }, () => {
+            res.send('-1');
+        });
+    }
 });
 
 
@@ -497,7 +539,8 @@ app.get('/users/:userInfo', (req, res) => {
             res.sendStatus(404);
         else
             res.render('view-profile', {
-                details: user
+                details: user,
+                follows: user.followers.indexOf(req.session.uid)
             });
     });
 });
