@@ -538,10 +538,18 @@ app.get('/users/:userInfo', (req, res) => {
         else if (user == null)
             res.sendStatus(404);
         else
+        {
+            var val;
+            if(req.params.userInfo==req.session.uun)
+            val=1;
+            else
+            val=0;
             res.render('view-profile', {
                 details: user,
+                exists:val,
                 follows: user.followers.indexOf(req.session.uid)
             });
+        }
     });
 });
 
