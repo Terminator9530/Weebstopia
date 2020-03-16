@@ -50,7 +50,7 @@ const userDetail = new mongoose.Schema({
     email: String,
     password: String,
     profilePic: String,
-    list:Array
+    list: Array
 });
 const detail = mongoose.model('user', userDetail);
 app.use(upload());
@@ -59,7 +59,7 @@ app.use(upload());
 // -------------------------------------------------- root route -------------------------------------------------- //
 
 
-app.get('/',(req, res) => {
+app.get('/', (req, res) => {
     if (!req.session.uid) {
         res.render('index');
     } else {
@@ -73,44 +73,50 @@ app.get('/',(req, res) => {
 
 /*------------------Search Anime--------------------*/
 
-app.get("/searchanime",function(req,res){
+app.get("/searchanime", function (req, res) {
     res.render("searchanim");
 });
 
-app.post("/add",function(req,res){
-    if(!req.session.uid)
-    return res.redirect("/loginP");
-    detail.findOne({_id:req.session.uid},async function(err,data){
-        if(!err){
-            var flag=0,index_i,index_j;
-            for(i in data.list){
-                if(req.body.listvalue==data.list[i].listname)
-                {
-                    index_i=i;
+app.post("/add", function (req, res) {
+    if (!req.session.uid)
+        return res.redirect("/loginP");
+    detail.findOne({
+        _id: req.session.uid
+    }, async function (err, data) {
+        if (!err) {
+            var flag = 0,
+                index_i, index_j;
+            for (i in data.list) {
+                if (req.body.listvalue == data.list[i].listname) {
+                    index_i = i;
                     console.log(index_i);
                     console.log("aa gaya");
-                    for(j in data.list[i].lists){
-                        if(req.body.id==data.list[i].lists[j].id)
-                        {
-                            index_j=j;
-                            flag=1;
+                    for (j in data.list[i].lists) {
+                        if (req.body.id == data.list[i].lists[j].id) {
+                            index_j = j;
+                            flag = 1;
                             //console.log("index_i,index_j");
                             break;
                         }
                     }
                     break;
                 }
-                
+
             }
             console.log(flag);
-            if (flag){
+            if (flag) {
                 //http://api.jikan.moe/v3/anime/1535
-            }
-            else{
-                data.list[index_i].lists.push({id:req.body.id,image_url:req.body.img,title:req.body.title});
+            } else {
+                data.list[index_i].lists.push({
+                    id: req.body.id,
+                    image_url: req.body.img,
+                    title: req.body.title
+                });
                 //console.log(data.list[index_i].lists);
-                
-                await detail.updateOne({_id:req.session.uid}, data);
+
+                await detail.updateOne({
+                    _id: req.session.uid
+                }, data);
                 /*await detail.findOne({_id:req.session.uid},function(err,d){
                     console.log(data.list[0].lists);
                 });*/
@@ -122,31 +128,44 @@ app.post("/add",function(req,res){
     })
 });
 
-app.get("/showlist",function(req,res){
-    detail.findOne({_id:req.session.uid},function(err,data){
-        res.render("list",{listx:data.list});
+app.get("/showlist", function (req, res) {
+    detail.findOne({
+        _id: req.session.uid
+    }, function (err, data) {
+        res.render("list", {
+            listx: data.list
+        });
     });
 });
 
-app.get("/getlist",function(req,res){
-    detail.findOne({_id:req.session.uid},function(err,data){
-        res.send({listx:data.list});
+app.get("/getlist", function (req, res) {
+    detail.findOne({
+        _id: req.session.uid
+    }, function (err, data) {
+        res.send({
+            listx: data.list
+        });
     });
 });
 
 /*-------------------------delete list-----------------------------*/
 
-app.get("/deletelist",function(req,res){
+app.get("/deletelist", function (req, res) {
     res.render("deleteList");
 });
 
-app.post("/del",async function(req,res){
+app.post("/del", async function (req, res) {
     console.log(req.body);
-    for(i in req.body){
-        await detail.update(
-            {_id:req.session.uid},
-            { $pull: { list:{listname:i}} }
-        );
+    for (i in req.body) {
+        await detail.update({
+            _id: req.session.uid
+        }, {
+            $pull: {
+                list: {
+                    listname: i
+                }
+            }
+        });
     }
     res.send("Get");
 });
@@ -154,28 +173,35 @@ app.post("/del",async function(req,res){
 
 /*-------------------------Edit list-------------------------------*/
 
-app.get("/editlist",function(req,res){
-    detail.findOne({_id:req.session.uid},function(err,data){
-        res.render("editlist",{listx:data.list});
+app.get("/editlist", function (req, res) {
+    detail.findOne({
+        _id: req.session.uid
+    }, function (err, data) {
+        res.render("editlist", {
+            listx: data.list
+        });
     });
 });
 
-app.post("/deleteListItems",function(req,res){
+app.post("/deleteListItems", function (req, res) {
     console.log(req.body);
-    detail.findOne({_id:req.session.uid}, 'list', async function(err,data){
+    detail.findOne({
+        _id: req.session.uid
+    }, 'list', async function (err, data) {
         // delete in which? ind = 3
-        for(i in data.list){
-            for(j in data.list[i].lists){
-                if((data.list[i].listname+data.list[i].lists[j].title) in req.body)
-                {
+        for (i in data.list) {
+            for (j in data.list[i].lists) {
+                if ((data.list[i].listname + data.list[i].lists[j].title) in req.body) {
                     console.log("deleted");
-                    data.list[i].lists.splice(j,1);
+                    data.list[i].lists.splice(j, 1);
                     // delete [j];
-                    console.log(j,data.list[i].lists);
+                    console.log(j, data.list[i].lists);
                 }
             }
         }
-        await detail.updateOne({_id:req.session.uid}, data);
+        await detail.updateOne({
+            _id: req.session.uid
+        }, data);
     });
     res.send("Done");
 });
@@ -183,20 +209,32 @@ app.post("/deleteListItems",function(req,res){
 
 /*------------------------create list------------------------------*/
 
-app.post("/create-list",function(req,res){
+app.post("/create-list", function (req, res) {
     console.log(req.body);
-    detail.findOne({_id:req.session.uid},async function(err,data){
-        var flag=0;
-        for(i in data.list){
-            if(data.list[i].listname==req.body.listID)
-            {
-                flag=1;
+    detail.findOne({
+        _id: req.session.uid
+    }, async function (err, data) {
+        var flag = 0;
+        for (i in data.list) {
+            if (data.list[i].listname == req.body.listID) {
+                flag = 1;
                 break;
             }
         }
-        if(!flag){
-            await detail.updateOne({_id:req.session.uid},{$push:{list:{listname:req.body.listID,lists:[]}}});
-            await detail.findOne({_id:req.session.uid},function(err,d){
+        if (!flag) {
+            await detail.updateOne({
+                _id: req.session.uid
+            }, {
+                $push: {
+                    list: {
+                        listname: req.body.listID,
+                        lists: []
+                    }
+                }
+            });
+            await detail.findOne({
+                _id: req.session.uid
+            }, function (err, d) {
                 console.log(d.list);
                 res.send("Test");
             });
@@ -207,11 +245,15 @@ app.post("/create-list",function(req,res){
 
 
 /*-------------------------search list----------------------------*/
-app.post("/searchlist",function(req,res){
-    detail.findOne({_id:req.session.uid},function(err,data){
-        console.log(data.list,data.list.length,data.list[0].listname);
+app.post("/searchlist", function (req, res) {
+    detail.findOne({
+        _id: req.session.uid
+    }, function (err, data) {
+        console.log(data.list, data.list.length, data.list[0].listname);
         // res.send("found");
-        res.send({a:data.list});
+        res.send({
+            a: data.list
+        });
         // res.send({a})
     });
 });
@@ -426,12 +468,14 @@ app.get('/search-user', (req, res) => {
     res.render('search');
 });
 
-app.post('/showprofile',(req,res)=>{
+app.post('/showprofile', (req, res) => {
     console.log(req.body);
-    detail.findOne({_id: req.body["hello"]},function(err,user){
-        res.redirect("/users/"+user.userName)
+    detail.findOne({
+        _id: req.body["hello"]
+    }, function (err, user) {
+        res.redirect("/users/" + user.userName)
         console.log(user);
-});
+    });
 });
 
 app.post('/search-user', (req, res) => {
@@ -442,13 +486,19 @@ app.post('/search-user', (req, res) => {
     });
 });
 
-app.get('/users/:userName', (req, res) => {
+app.get('/users/:userInfo', (req, res) => {
+    console.log(req.url);
     detail.findOne({
-        userName: req.params.userName
+        userName: req.params.userInfo
     }, (err, user) => {
-        res.render('view-profile', {
-            details: user
-        });
+        if (err)
+            res.sendStatus(500);
+        else if (user == null)
+            res.sendStatus(404);
+        else
+            res.render('view-profile', {
+                details: user
+            });
     });
 });
 
