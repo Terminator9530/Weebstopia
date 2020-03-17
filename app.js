@@ -11,6 +11,8 @@ const MongoStore = require('connect-mongo')(session);
 const upload = require('express-fileupload');
 const fs = require('fs').promises;
 const dotenv = require('dotenv');
+const jwt = require('jwt-simple');
+const nodemailer = require('nodemailer');
 
 
 // -------------------------------------------------- server settings -------------------------------------------------- //
@@ -23,7 +25,7 @@ mongoose.connect(process.env.CONN, {
     useUnifiedTopology: true
 });
 app.use(session({
-    secret: "I'll Take A Potato Chip... And Eat It!",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     store: new MongoStore({
@@ -66,6 +68,13 @@ const userDetail = new mongoose.Schema({
 });
 const detail = mongoose.model('user', userDetail);
 app.use(upload());
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.MAIL_EMAIL,
+        pass: process.env.MAIL_PASS
+    }
+});
 
 
 // -------------------------------------------------- root route -------------------------------------------------- //
@@ -255,7 +264,7 @@ app.post("/create-list", function (req, res) {
 });
 
 
-/*--------------------------show followers-------------------------*/
+/*--------------------------show followers-------------------------
 
 app.post("/showfollowers", async function (req, res) {
     var followers = [];
@@ -278,6 +287,28 @@ app.post("/showfollowers", async function (req, res) {
         info: followers,
         status: "followers"
     });
+});*/
+
+/*--------------------------show followers-------------------------*/
+
+app.post("/showfollowers", async function (req, res) {
+    var followers = [];
+    await detail.findOne({
+        _id: req.session.uid
+    }, 'followers').populate("followers.user", "userName profilePic").exec(function (err, data) {
+        if (data) {
+            console.log(data.followers);
+            data.followers.forEach((ele)=>{
+                followers.push({userName:ele.user.userName,img:ele.user.profilePic});
+                console.log(followers);
+            });
+            console.log(followers);
+    res.render("follow", {
+         info: followers,
+         status: "followers"
+     });
+        }
+    });
 });
 
 /*--------------------------show following-------------------------*/
@@ -295,6 +326,54 @@ app.post("/showfollowing", async function (req, res) {
             });
             console.log(following);
     res.render("follow", {
+         info: following,
+         status: "following"
+     });
+        }
+    });
+   // res.sendStatus(200)
+});
+
+
+/*--------------------------show followers not login-------------------------*/
+
+app.post("/show/:showfollowers", async function (req, res) {
+    console.log(req.params,req.url);
+    var followers = [];
+    await detail.findOne({
+        _id: req.params.showfollowers
+    }, 'followers').populate("followers.user", "userName profilePic").exec(function (err, data) {
+        if (data) {
+            console.log(data.followers);
+            data.followers.forEach((ele)=>{
+                followers.push({userName:ele.user.userName,img:ele.user.profilePic});
+                console.log(followers);
+            });
+            console.log(followers);
+    res.render("follow1", {
+         info: followers,
+         status: "followers"
+     });
+        }
+    });
+});
+
+/*--------------------------show following not login-------------------------*/
+
+app.post("/show/:showfollowing", async function (req, res) {
+    console.log(req.params);
+    var following = [];
+    await detail.findOne({
+        _id: req.params.showfollowers
+    }, 'following').populate("following.user", "userName profilePic").exec(function (err, data) {
+        if (data) {
+            console.log(data.following);
+            data.following.forEach((ele)=>{
+                following.push({userName:ele.user.userName,img:ele.user.profilePic});
+                console.log(following);
+            });
+            console.log(following);
+    res.render("follow1", {
          info: following,
          status: "following"
      });
@@ -607,6 +686,114 @@ app.get('/users/:userInfo', (req, res) => {
                 exists: val,
                 follows: user.followers.indexOf(req.session.uid)
             });
+        }
+    });
+});
+
+// -------------------------------------------------- password reset routes -------------------------------------------------- //
+
+
+app.get('/forgot-password', (req, res) => {
+    res.render('forgot-password', {
+        message: '',
+        verified: 0,
+        bg: ''
+    });
+});
+
+app.post('/forgot-password-email', (req, res) => {
+    detail.findOne({
+        email: req.body.email
+    }, async (err, user) => {
+        if (user) {
+            const payload = {
+                id: user._id,
+                email: user.email
+            };
+            const secret = user.password + '-' + user._id.getTimestamp() + '-' + process.env.SECRET;
+            const token = jwt.encode(payload, secret);
+            ejs.renderFile(__dirname + '/views/reset-password-mail.ejs', {
+                userName: user.userName,
+                pid: payload.id,
+                token: token
+            }, (err, mail) => {                
+                const mailOptions = {
+                    from: 'weebstopia@gmail.com',
+                    to: user.email,
+                    subject: 'Weebstopia Password Reset',
+                    html: mail
+                }
+                transporter.sendMail(mailOptions, function (error, info) {
+                    if (!error) {
+                        res.render('forgot-password', {
+                            message: 'An email has been sent. Please click on the link when you get it.',
+                            verified: 1,
+                            bg: 'secondary'
+                        });
+                    }
+                });
+            });
+        } else {
+            res.render('forgot-password', {
+                message: 'Sorry, there is no user with that email.',
+                verified: 0,
+                bg: 'danger'
+            });
+        }
+    });
+});
+
+app.get('/reset-password/:id/:token', (req, res) => {
+    var valid = 1,
+        payload;
+    detail.findById(req.params.id, (err, user) => {
+        const secret = user.password + '-' + user._id.getTimestamp() + '-' + process.env.SECRET;
+        try {
+            payload = jwt.decode(req.params.token, secret);
+        } catch (err) {
+            valid = 0;
+        } finally {
+            if (valid) {
+                res.render('reset-password-page', {
+                    pid: payload.id,
+                    token: req.params.token
+                });
+            } else {
+                res.render('reset-password-page', {
+                    pid: 'null',
+                    token: 'invalid'
+                });
+            }
+        }
+    });
+});
+
+app.post('/reset-password', function (req, res) {
+    var valid = 1;
+    detail.findById(req.body.id, (err, user) => {
+        const secret = user.password + '-' + user._id.getTimestamp() + '-' + process.env.SECRET;
+        try {
+            const payload = jwt.decode(req.body.token, secret);
+        } catch (err) {
+            valid = 0;
+        } finally {
+            if (valid) {
+                password = crypto.createHash('sha256').update(req.body.password).digest('hex').toString();
+                user.password = password;
+                detail.updateOne({
+                    _id: req.body.id
+                }, user, () => {
+                    res.render('log-in', {
+                        message: 'Password reset was successful! Please login to continue!',
+                        bg: 'warning'
+                    });
+                });
+            } else {
+                res.render('reset-password-page', {
+                    pid: 'null',
+                    token: 'invalid'
+                });
+            }
         }
     });
 });
