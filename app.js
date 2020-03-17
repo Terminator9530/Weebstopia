@@ -672,6 +672,16 @@ app.get('/users/:userInfo', (req, res) => {
         else if (user == null)
             res.sendStatus(404);
         else {
+            var flag=0;
+            for(i in user.followers){
+                console.log(i);
+                if(user.followers[i].user==req.session.uid)
+                flag=1;
+            }
+            if(flag==0)
+            flag=-1;
+            else
+            flag=1;
             var val;
             if (req.params.userInfo == req.session.uun)
                 val = 1;
@@ -680,7 +690,7 @@ app.get('/users/:userInfo', (req, res) => {
             res.render('view-profile', {
                 details: user,
                 exists: val,
-                follows: user.followers.indexOf(req.session.uid)
+                follows: flag
             });
         }
     });
