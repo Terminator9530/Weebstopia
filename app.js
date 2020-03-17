@@ -446,8 +446,7 @@ app.get('/sign-up', (req, res) => {
     if (!req.session.uid) {
         res.render('sign-up', {
             message: '',
-            bg: 'bg-white',
-            text: 'text-secondary'
+            bg: 'white'
         });
     } else {
         res.redirect('/');
@@ -461,8 +460,7 @@ app.post('/save-user', (req, res) => {
         if (found) {
             res.render('sign-up', {
                 message: 'User name already exists!',
-                bg: 'bg-danger',
-                text: 'text-white'
+                bg: 'danger'
             });
         } else {
             detail.findOne({
@@ -489,8 +487,7 @@ app.post('/save-user', (req, res) => {
                 } else {
                     res.render('log-in', {
                         message: 'You already have an account!',
-                        bg: 'bg-warning',
-                        text: 'text-white'
+                        bg: 'warning'
                     });
                 }
             });
@@ -506,8 +503,7 @@ app.get('/log-in', (req, res) => {
     if (!req.session.uid) {
         res.render('log-in', {
             message: '',
-            bg: 'bg-white',
-            text: 'text-secondary'
+            bg: 'white'
         });
     } else {
         res.redirect('/');
