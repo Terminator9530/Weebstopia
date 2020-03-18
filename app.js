@@ -229,6 +229,7 @@ app.post("/deleteListItems/:lstName", function (req, res) {
                 _id: req.session.uid
             }, function(err,d1){
                 //console.log(d1.list);
+                res.redirect("/editlist");
             });
         });
     });

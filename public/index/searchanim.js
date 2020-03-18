@@ -86,7 +86,7 @@ $(document).ready(function () {
       data.results.forEach(function (item) {
         //content += object.hd + object.hi + item.image_url + object.ti + object.ht + item.title + object.tt + object.hb + item.mal_id +','+item.image_url+object.tb + object.td;
         //console.log(content);
-        content+=`<div class='list-group col-2'><img style='height:20rem' src='${item.image_url}'><p>${item.title}</p>
+        content+=`<div class='list-group col-2' style="margin:15px;"><img style='height:20rem' src='${item.image_url}'><p>${item.title}</p>
         <button class='btn btn-outline-primary' onclick='add(${item.mal_id},"${item.image_url}","${item.title}")'>Add</button></div>`
       });      
       $("#loader").hide(250);
