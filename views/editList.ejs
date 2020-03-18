@@ -35,7 +35,6 @@
                     onclick=show("<%= list.listname %>")><%= list.listname %></button>
                 <% }); %>
             </div><br><br>
-            
                 <div id="list">
                     <% listx.forEach(function(list){ %>
                     <form action="/deleteListItems/<%= list.listname %>" method="POST">
@@ -61,6 +60,7 @@
                     <% }); %>
                 </div>
         </center>
+        <div id="nores" style="position: absolute;height: 100%;width: 100%;margin: 0;left: 0;padding-top: 100px;"><center>No List Selected</center></div>
     </div>
 
     <!-- Optional JavaScript -->
@@ -79,11 +79,16 @@
         var info;
         var currentList = "";
         function show(txt) {
+            $("#nores").html("<center>No Anime Added</center>");
             //console.log(txt);
             currentList = txt;
             for (i in info.listx) {
                 //console.log(i,info.listx[i].listname);
                 if (info.listx[i].listname == txt) {
+                    if(info.listx[i].lists.length==0)
+                    $("#nores").show();
+                    else
+                    $("#nores").hide();
                     document.getElementById(info.listx[i].listname).style.display = "";
                     console.log("btn" + info.listx[i].listname);
                     $("#btn" + info.listx[i].listname).addClass("active");
