@@ -35,11 +35,14 @@
                     onclick=show("<%= list.listname %>")><%= list.listname %></button>
                 <% }); %>
             </div><br><br>
-            <form action="/deleteListItems" method="POST">
-                <button type="submit" class="btn btn-outline-primary">Update List</button><br><br>
+            
                 <div id="list">
                     <% listx.forEach(function(list){ %>
-                    <div class="row" style="display: none;" id=<%= list.listname %>>
+                    <form action="/deleteListItems/<%= list.listname %>" method="POST">
+                    <div  id="<%= list.listname %>" style="display: none;">
+                    <input type="text" class="form-control" placeholder="Enter The Name Of List" name="<%= list.listname %>" value="<%= list.listname %>" style="width:30%;"><br>
+                    <button type="submit" class="btn btn-outline-primary">Update <%= list.listname %></button><br><br>
+                    <div class="row">
                         <% list.lists.forEach(function(temp){ %>
                         <span class="card col-2 col-md-2" style="width: 18rem;">
                             <img class="card-img-top" src=<%= temp.image_url %> alt="Card image cap"
@@ -53,9 +56,10 @@
                         </span>
                         <% }); %>
                     </div>
+                    </div>
+                    </form>
                     <% }); %>
                 </div>
-            </form>
         </center>
     </div>
 

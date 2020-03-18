@@ -205,7 +205,7 @@ app.get("/editlist", function (req, res) {
     });
 });
 
-app.post("/deleteListItems", function (req, res) {
+/*app.post("/deleteListItems", function (req, res) {
     console.log(req.body);
     detail.findOne({
         _id: req.session.uid
@@ -225,6 +225,31 @@ app.post("/deleteListItems", function (req, res) {
             _id: req.session.uid
         }, data,function(err,d){
             res.redirect("/editlist");
+        });
+    });
+});*/
+
+app.post("/deleteListItems/:lstName", function (req, res) {
+    console.log(req.body,req.params);
+    detail.findOne({_id:req.session.uid},'list',function(err,data){
+        console.log(data);
+        for(i in data.list){
+            console.log(data.list[i].listname);
+            if((data.list[i].listname==req.params.lstName)&&(data.list[i].listname!=req.body[req.params.lstName]))
+            {
+                data.list[i].listname=req.body[req.params.lstName];
+            }
+        }
+        console.log(data.list);
+        detail.updateOne({
+            _id: req.session.uid
+        }, data,function(err,d){
+            detail.findOne({
+                _id: req.session.uid
+            }, function(err,d1){
+                console.log(d1.list);
+                res.send("Done");
+            });
         });
     });
 });
