@@ -239,16 +239,20 @@ app.post("/deleteListItems/:lstName", function (req, res) {
             {
                 data.list[i].listname=req.body[req.params.lstName];
             }
+            for(j in data.list[i].lists)
+            {
+                if((req.params.lstName+data.list[i].lists[j].title) in req.body)
+                data.list[i].lists.splice(j, 1);
+            }
         }
-        console.log(data.list);
+        //console.log(data.list);
         detail.updateOne({
             _id: req.session.uid
         }, data,function(err,d){
             detail.findOne({
                 _id: req.session.uid
             }, function(err,d1){
-                console.log(d1.list);
-                res.send("Done");
+                //console.log(d1.list);
             });
         });
     });
