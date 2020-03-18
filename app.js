@@ -205,30 +205,6 @@ app.get("/editlist", function (req, res) {
     });
 });
 
-/*app.post("/deleteListItems", function (req, res) {
-    console.log(req.body);
-    detail.findOne({
-        _id: req.session.uid
-    }, 'list', async function (err, data) {
-        // delete in which? ind = 3
-        for (i in data.list) {
-            for (j in data.list[i].lists) {
-                if ((data.list[i].listname + data.list[i].lists[j].title) in req.body) {
-                    console.log("deleted");
-                    data.list[i].lists.splice(j, 1);
-                    // delete [j];
-                    console.log(j, data.list[i].lists);
-                }
-            }
-        }
-        await detail.updateOne({
-            _id: req.session.uid
-        }, data,function(err,d){
-            res.redirect("/editlist");
-        });
-    });
-});*/
-
 app.post("/deleteListItems/:lstName", function (req, res) {
     console.log(req.body,req.params);
     detail.findOne({_id:req.session.uid},'list',function(err,data){
