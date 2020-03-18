@@ -223,9 +223,10 @@ app.post("/deleteListItems", function (req, res) {
         }
         await detail.updateOne({
             _id: req.session.uid
-        }, data);
+        }, data,function(err,d){
+            res.redirect("/editlist");
+        });
     });
-    res.send("Done");
 });
 
 
@@ -235,7 +236,7 @@ app.post("/create-list", function (req, res) {
     console.log(req.body);
     detail.findOne({
         _id: req.session.uid
-    }, async function (err, data) {
+    }, function (err, data) {
         var flag = 0;
         for (i in data.list) {
             if (data.list[i].listname == req.body.listID) {
@@ -243,8 +244,11 @@ app.post("/create-list", function (req, res) {
                 break;
             }
         }
+        console.log(flag);
         if (!flag) {
-            await detail.updateOne({
+            console.log("here");
+            
+            detail.updateOne({
                 _id: req.session.uid
             }, {
                 $push: {
@@ -253,13 +257,23 @@ app.post("/create-list", function (req, res) {
                         lists: []
                     }
                 }
+            },function(err,d){
+                if(!err){
+                    res.send({message:"Updated"});
+                }
+                else{
+                    console.log(err);
+                }
             });
-            await detail.findOne({
+            /*await detail.findOne({
                 _id: req.session.uid
             }, function (err, d) {
                 console.log(d.list);
                 res.send("Test");
-            });
+            });*/
+        }
+        else{
+            res.send({message:"Already Exists"});
         }
     });
 });

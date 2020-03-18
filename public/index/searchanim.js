@@ -18,7 +18,7 @@ $("#save").click(function(){
   console.log($("#opt").val());
   $.post('/add',{id:id,img:image,title:title,listvalue:$("#opt").val()},function(data,res){
     if(data)
-    $('#exampleModalCenter').modal('hide')
+    $('#exampleModalCenter').modal('hide');
   });
 });
 }
