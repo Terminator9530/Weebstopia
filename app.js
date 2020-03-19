@@ -475,7 +475,7 @@ app.post('/save-user', (req, res) => {
                     req.session.uun = newUser.userName;
                     req.session.upp = newUser.profilePic;
                     if (req.body.remember == 'true') {
-                        req.session.cookie.maxAge = 365 * 24 * 60 * 60 * 1000;
+                        req.session.cookie.maxAge = 5 * 24 * 60 * 60 * 1000;
                     }
                     req.session.save(() => {
                         res.redirect('/');
@@ -516,7 +516,7 @@ app.post('/check-user', (req, res) => {
             req.session.uun = user.userName;
             req.session.upp = user.profilePic;
             if (req.body.remember == 'true') {
-                req.session.cookie.maxAge = 365 * 24 * 60 * 60 * 1000;
+                req.session.cookie.maxAge = 5 * 24 * 60 * 60 * 1000;
             }
             req.session.save(() => {
                 res.redirect('/');
