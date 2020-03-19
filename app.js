@@ -189,7 +189,7 @@ app.post("/del", async function (req, res) {
             }
         });
     }
-    res.send("Get");
+    res.redirect("/deletelist");
 });
 
 
