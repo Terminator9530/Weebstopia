@@ -285,31 +285,6 @@ app.post("/create-list", function (req, res) {
 });
 
 
-/*--------------------------show followers-------------------------
-
-app.post("/showfollowers", async function (req, res) {
-    var followers = [];
-    await detail.findOne({
-        _id: req.session.uid
-    }, function (err, data) {
-        data.followers.forEach(async element => {
-            await detail.findOne({
-                _id: element
-            }, function (err, fdata) {
-                followers.push({
-                    username: fdata.userName,
-                    image: fdata.profilePic
-                });
-            });
-        });
-    });
-    console.log(followers);
-    res.render("follow", {
-        info: followers,
-        status: "followers"
-    });
-});*/
-
 /*--------------------------show followers-------------------------*/
 
 app.post("/showfollowers", async function (req, res) {
