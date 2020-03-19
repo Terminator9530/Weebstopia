@@ -23,6 +23,9 @@
             text-decoration: none;
             cursor: pointer;
         }
+        .polaroid {
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    }
     </style>
 </head>
 
@@ -43,9 +46,9 @@
                     <button type="submit" class="btn btn-outline-primary">Update <%= list.listname %></button><br><br>
                     <div class="row">
                         <% list.lists.forEach(function(temp){ %>
-                        <span class="card col-2 col-md-2" style="width: 18rem;">
+                        <span class="card col-2 col-md-2 polaroid" style="width: 18rem;padding:0px;margin-right:10px;margin-bottom:10px;">
                             <img class="card-img-top" src=<%= temp.image_url %> alt="Card image cap"
-                                style="height:25rem;">
+                                height="225">
                             <span class="card-body">
                                 <center><button class="card-title makebuttonlink" style="cursor:pointer;"><input
                                             type="checkbox"
