@@ -23,7 +23,7 @@
 
 <body>
     <div class="row"  style="margin:0 10px;">
-        <% if(status=="followers"){ %>
+        <% if((status=="followers")&&(info.length!=0)){ %>
         <% info.forEach(function(user){ %>
         <div class="card col-2 polaroid" style="width: 18rem;padding:0px;margin-right:10px;margin-bottom:10px;">
             <img src="../<%= user.img %>" class="card-img-top" height="225">
@@ -33,7 +33,7 @@
         </div>
         <% }); %>
         <% } %>
-        <% if(status=="following"){ %>
+        <% if((status=="following")&&(info.length!=0)){ %>
         <% info.forEach(function(user){ %>
         <div class="card col-2 polaroid" style="width: 18rem;padding:0px;margin-right:10px;margin-bottom:10px;">
             <img src="../<%= user.img %>" class="card-img-top" height="225">
@@ -42,6 +42,9 @@
             </div>
         </div>
         <% }); %>
+        <% } %>
+        <% if(info.length==0){ %>
+            <div style="position: absolute;top:50%;left:45%;">No Result Found</div>
         <% } %>
     </div>
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"

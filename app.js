@@ -333,7 +333,7 @@ app.post("/showfollowing", async function (req, res) {
 
 /*--------------------------show followers not login-------------------------*/
 
-app.post("/show/:showfollowers", async function (req, res) {
+app.post("/showfollowers/:showfollowers", async function (req, res) {
     console.log(req.params,req.url);
     var followers = [];
     await detail.findOne({
@@ -356,11 +356,11 @@ app.post("/show/:showfollowers", async function (req, res) {
 
 /*--------------------------show following not login-------------------------*/
 
-app.post("/show/:showfollowing", async function (req, res) {
+app.post("/showfollowing/:showfollowing", async function (req, res) {
     console.log(req.params);
     var following = [];
     await detail.findOne({
-        _id: req.params.showfollowers
+        _id: req.params.showfollowing
     }, 'following').populate("following.user", "userName profilePic").exec(function (err, data) {
         if (data) {
             console.log(data.following);
