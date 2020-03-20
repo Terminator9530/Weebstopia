@@ -211,14 +211,16 @@ app.post("/deleteListItems/:lstName", function (req, res) {
         console.log(data);
         for(i in data.list){
             console.log(data.list[i].listname);
-            if((data.list[i].listname==req.params.lstName)&&(data.list[i].listname!=req.body[req.params.lstName]))
+            if(data.list[i].listname==req.params.lstName)
             {
+                if(data.list[i].listname!=req.body[req.params.lstName])
                 data.list[i].listname=req.body[req.params.lstName];
-            }
-            for(j in data.list[i].lists)
-            {
-                if((req.params.lstName+data.list[i].lists[j].title) in req.body)
-                data.list[i].lists.splice(j, 1);
+                for(j in data.list[i].lists)
+                {
+                    if((req.params.lstName+data.list[i].lists[j].title) in req.body)
+                    data.list[i].lists.splice(j, 1);
+                }
+                break;
             }
         }
         //console.log(data.list);
@@ -259,6 +261,7 @@ app.post("/create-list", function (req, res) {
             }, {
                 $push: {
                     list: {
+                        list_id:String(data.list.length+1),
                         listname: req.body.listID,
                         lists: []
                     }
