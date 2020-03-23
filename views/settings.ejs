@@ -54,8 +54,14 @@
         <%}%>
         <div class="jumbotron">
             <center>
-                <img id="blah" src="../<%= details.profilePic %>" width=200 height=200 style="z-index:1;"
+                <% if(type=="Google"){ %>
+                    <img id="blah" src="<%= details.profilePic %>" width=200 height=200 style="z-index:1;"
                         alt="your image" />
+                <% } %>
+                <% if(type!="Google"){ %>
+                    <img id="blah" src="../<%= details.profilePic %>" width=200 height=200 style="z-index:1;"
+                        alt="your image" />
+                <% } %>
                 <div class="upload-btnn-wrapper">
                         <button class="btnn">Edit</button>
                         <input type="file" name="profilePic" id="imgInp">

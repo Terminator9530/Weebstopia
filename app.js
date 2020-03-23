@@ -17,6 +17,7 @@ const passport = require('passport');
 const passportLocalMongoose = require('passport-local-mongoose');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const findOrCreate = require('mongoose-findorcreate');
+const download = require('image-downloader')
 
 
 
@@ -100,7 +101,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-var logMessage="";
+var logMessage = "";
 
 
 passport.use(new GoogleStrategy({
@@ -108,14 +109,24 @@ passport.use(new GoogleStrategy({
         clientSecret: process.env.CLIENT_SECRET,
         callbackURL: "http://localhost:3000/auth/google/secrets"
     },
-    function (accessToken, refreshToken, profile, cb) {
+    async function (accessToken, refreshToken, profile, cb) {
+        console.log("--------------------------------------Profile----------------------------------------------------");
         console.log(profile);
-        detail.findOrCreate({
-            googleId: profile.id,
-            fullName:profile.displayName,
-            userName:profile.displayName,
-            profilePic:profile.photos[0].value
-        }, function (err, user) {
+        console.log("-------------------------------------------------------------------------------------------------");
+        await detail.findOrCreate({
+            googleId: profile.id
+        }, async function (err, user) {
+            console.log(user.profilePic);
+            if(!user.profilePic){
+                await detail.update({_id:user.id},{$set:{profilePic:profile.photos[0].value,userName:profile.displayName,fullName:profile.displayName,email:profile._json.email}},{multi: true},function(err,d){
+                    logMessage="Google";
+                    console.log("-----------------------------find or create-------------------------------------");
+                    console.log(user);
+                    console.log("--------------------------------------------------------------------------------");
+                    return cb(err, user); 
+                });
+            }
+            else
             return cb(err, user);
         });
     }
@@ -126,11 +137,10 @@ passport.use(new GoogleStrategy({
 
 
 app.get('/', (req, res) => {
-    console.log(req.session);
+    //console.log(req.session);
     if (!req.session.uid) {
         res.render('index');
-    } 
-    else {
+    } else {
         detail.findById(req.session.uid, (err, user) => {
             res.render('profile', {
                 details: user
@@ -141,7 +151,7 @@ app.get('/', (req, res) => {
 
 app.get('/auth/google',
     passport.authenticate('google', {
-        scope: ['profile']
+        scope: ['profile', 'email']
     }));
 
 
@@ -151,12 +161,18 @@ app.get('/auth/google/secrets',
         failureRedirect: '/loginP'
     }),
     function (req, res) {
+        console.log("---------------------------------------User----------------------------------------");
         console.log(req.user);
+        console.log("-----------------------------------------------------------------------------------");
         // Successful authentication, redirect secrets.
-        req.session.uid = req.user._id;
-        req.session.uun = req.user.userName;
-        req.session.upp = req.user.profilePic;
-        res.redirect("/");
+        detail.findOne({_id:req.user.id},function(err,data){
+            req.session.uid = data._id;
+            req.session.uun = data.userName;
+            req.session.upp = data.profilePic;
+            req.session.email = data.email;
+            console.log(req.session);
+            res.redirect("/");
+        });
     }
 );
 
@@ -660,6 +676,7 @@ app.post('/check-user', (req, res) => {
 });
 
 app.get('/log-out', (req, res) => {
+    logMessage="";
     req.session.destroy(() => {
         res.redirect('/');
     });
@@ -676,6 +693,7 @@ app.get('/settings', (req, res) => {
         detail.findById(req.session.uid, (err, user) => {
             res.render('settings', {
                 message: ['Account Settings'],
+                type:logMessage,
                 bg: ["primary"],
                 details: user
             });
@@ -728,7 +746,7 @@ app.post('/save-settings', async (req, res) => {
     }
     if (req.files) {
         const pic = req.files.profilePic;
-        if (req.session.upp != 'profile-pic-default.png') {
+        if ((req.session.upp.includes('http'))&&(req.session.upp != 'profile-pic-default.png')) {
             fs.unlink(__dirname + '/public/upload/' + req.session.upp);
         }
         pic.name = 'profile-pic-' + req.session.uun + '-' + pic.name;
@@ -746,6 +764,7 @@ app.post('/save-settings', async (req, res) => {
         detail.findById(req.session.uid, (err, user) => {
             res.render('settings', {
                 message: message,
+                type:logMessage,
                 bg: bg,
                 details: user
             });
