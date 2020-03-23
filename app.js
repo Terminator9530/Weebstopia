@@ -13,6 +13,10 @@ const fs = require('fs').promises;
 const dotenv = require('dotenv');
 const jwt = require('jwt-simple');
 const nodemailer = require('nodemailer');
+const passport = require('passport');
+const passportLocalMongoose = require('passport-local-mongoose');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const findOrCreate = require('mongoose-findorcreate');
 
 
 
@@ -21,10 +25,13 @@ const nodemailer = require('nodemailer');
 
 const app = express();
 dotenv.config();
+app.use(passport.initialize());
+app.use(passport.session());
 mongoose.connect(process.env.CONN, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
+mongoose.set("useCreateIndex", true);
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -53,6 +60,7 @@ const userDetail = new mongoose.Schema({
     email: String,
     password: String,
     profilePic: String,
+    googleId: String,
     list: Array,
     followers: [{
         user: {
@@ -67,7 +75,22 @@ const userDetail = new mongoose.Schema({
         }
     }]
 });
+userDetail.plugin(passportLocalMongoose, {
+    usernameUnique: false
+});
+userDetail.plugin(findOrCreate);
 const detail = mongoose.model('user', userDetail);
+passport.use(detail.createStrategy());
+
+passport.serializeUser(function (user, done) {
+    done(null, user.id);
+});
+
+passport.deserializeUser(function (id, done) {
+    detail.findById(id, function (err, user) {
+        done(err, user);
+    });
+});
 app.use(upload());
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -77,14 +100,37 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+var logMessage="";
+
+
+passport.use(new GoogleStrategy({
+        clientID: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
+        callbackURL: "http://localhost:3000/auth/google/secrets"
+    },
+    function (accessToken, refreshToken, profile, cb) {
+        console.log(profile);
+        detail.findOrCreate({
+            googleId: profile.id,
+            fullName:profile.displayName,
+            userName:profile.displayName,
+            profilePic:profile.photos[0].value
+        }, function (err, user) {
+            return cb(err, user);
+        });
+    }
+));
+
 
 // -------------------------------------------------- root route -------------------------------------------------- //
 
 
 app.get('/', (req, res) => {
+    console.log(req.session);
     if (!req.session.uid) {
         res.render('index');
-    } else {
+    } 
+    else {
         detail.findById(req.session.uid, (err, user) => {
             res.render('profile', {
                 details: user
@@ -92,6 +138,28 @@ app.get('/', (req, res) => {
         });
     }
 });
+
+app.get('/auth/google',
+    passport.authenticate('google', {
+        scope: ['profile']
+    }));
+
+
+
+app.get('/auth/google/secrets',
+    passport.authenticate('google', {
+        failureRedirect: '/loginP'
+    }),
+    function (req, res) {
+        console.log(req.user);
+        // Successful authentication, redirect secrets.
+        req.session.uid = req.user._id;
+        req.session.uun = req.user.userName;
+        req.session.upp = req.user.profilePic;
+        res.redirect("/");
+    }
+);
+
 
 /*------------------Search Anime--------------------*/
 
@@ -206,19 +274,19 @@ app.get("/editlist", function (req, res) {
 });
 
 app.post("/deleteListItems/:lstName", function (req, res) {
-    console.log(req.body,req.params);
-    detail.findOne({_id:req.session.uid},'list',function(err,data){
+    console.log(req.body, req.params);
+    detail.findOne({
+        _id: req.session.uid
+    }, 'list', function (err, data) {
         console.log(data);
-        for(i in data.list){
+        for (i in data.list) {
             console.log(data.list[i].listname);
-            if(data.list[i].listname==req.params.lstName)
-            {
-                if(data.list[i].listname!=req.body[req.params.lstName])
-                data.list[i].listname=req.body[req.params.lstName];
-                for(j in data.list[i].lists)
-                {
-                    if((req.params.lstName+data.list[i].lists[j].title) in req.body)
-                    data.list[i].lists.splice(j, 1);
+            if (data.list[i].listname == req.params.lstName) {
+                if (data.list[i].listname != req.body[req.params.lstName])
+                    data.list[i].listname = req.body[req.params.lstName];
+                for (j in data.list[i].lists) {
+                    if ((req.params.lstName + data.list[i].lists[j].title) in req.body)
+                        data.list[i].lists.splice(j, 1);
                 }
                 break;
             }
@@ -226,10 +294,10 @@ app.post("/deleteListItems/:lstName", function (req, res) {
         //console.log(data.list);
         detail.updateOne({
             _id: req.session.uid
-        }, data,function(err,d){
+        }, data, function (err, d) {
             detail.findOne({
                 _id: req.session.uid
-            }, function(err,d1){
+            }, function (err, d1) {
                 //console.log(d1.list);
                 res.redirect("/editlist");
             });
@@ -255,22 +323,23 @@ app.post("/create-list", function (req, res) {
         console.log(flag);
         if (!flag) {
             console.log("here");
-            
+
             detail.updateOne({
                 _id: req.session.uid
             }, {
                 $push: {
                     list: {
-                        list_id:String(data.list.length+1),
+                        list_id: String(data.list.length + 1),
                         listname: req.body.listID,
                         lists: []
                     }
                 }
-            },function(err,d){
-                if(!err){
-                    res.send({message:"Updated"});
-                }
-                else{
+            }, function (err, d) {
+                if (!err) {
+                    res.send({
+                        message: "Updated"
+                    });
+                } else {
                     console.log(err);
                 }
             });
@@ -280,9 +349,10 @@ app.post("/create-list", function (req, res) {
                 console.log(d.list);
                 res.send("Test");
             });*/
-        }
-        else{
-            res.send({message:"Already Exists"});
+        } else {
+            res.send({
+                message: "Already Exists"
+            });
         }
     });
 });
@@ -291,26 +361,33 @@ app.post("/create-list", function (req, res) {
 /*--------------------------show followers-------------------------*/
 
 app.post("/showfollowers", async function (req, res) {
-    var followers = [],following = [];
+    var followers = [],
+        following = [];
     await detail.findOne({
         _id: req.session.uid
     }, 'followers following').populate("followers.user following.user", "userName profilePic").exec(function (err, data) {
         if (data) {
             //console.log(data.followers);
-            data.followers.forEach((ele)=>{
-                followers.push({userName:ele.user.userName,img:ele.user.profilePic});
+            data.followers.forEach((ele) => {
+                followers.push({
+                    userName: ele.user.userName,
+                    img: ele.user.profilePic
+                });
                 console.log(followers);
             });
-            data.following.forEach((ele)=>{
-                following.push({userName:ele.user.userName,img:ele.user.profilePic});
+            data.following.forEach((ele) => {
+                following.push({
+                    userName: ele.user.userName,
+                    img: ele.user.profilePic
+                });
                 console.log(following);
             });
             //console.log(followers);
-    res.render("follow", {
-         infofl: followers,
-         infofw:following,
-         status:"followers"
-     });
+            res.render("follow", {
+                infofl: followers,
+                infofw: following,
+                status: "followers"
+            });
         }
     });
 });
@@ -318,56 +395,70 @@ app.post("/showfollowers", async function (req, res) {
 /*--------------------------show following-------------------------*/
 
 app.post("/showfollowing", async function (req, res) {
-    var followers = [],following = [];
+    var followers = [],
+        following = [];
     await detail.findOne({
         _id: req.session.uid
     }, 'following followers').populate("following.user followers.user", "userName profilePic").exec(function (err, data) {
         if (data) {
-           // console.log(data.following);
-            data.followers.forEach((ele)=>{
-                followers.push({userName:ele.user.userName,img:ele.user.profilePic});
+            // console.log(data.following);
+            data.followers.forEach((ele) => {
+                followers.push({
+                    userName: ele.user.userName,
+                    img: ele.user.profilePic
+                });
                 console.log(followers);
             });
-            data.following.forEach((ele)=>{
-                following.push({userName:ele.user.userName,img:ele.user.profilePic});
+            data.following.forEach((ele) => {
+                following.push({
+                    userName: ele.user.userName,
+                    img: ele.user.profilePic
+                });
                 console.log(following);
             });
             //console.log(following);
-    res.render("follow", {
-        infofl:followers,
-         infofw: following,
-         status: "following"
-     });
+            res.render("follow", {
+                infofl: followers,
+                infofw: following,
+                status: "following"
+            });
         }
     });
-   // res.sendStatus(200)
+    // res.sendStatus(200)
 });
 
 
 /*--------------------------show followers not login-------------------------*/
 
 app.post("/showfollowers/:showfollowers", async function (req, res) {
-    console.log(req.params,req.url);
-    var followers = [],following = [];
+    console.log(req.params, req.url);
+    var followers = [],
+        following = [];
     await detail.findOne({
         _id: req.params.showfollowers
     }, 'followers following').populate("followers.user following.user", "userName profilePic").exec(function (err, data) {
         if (data) {
             console.log(data.followers);
-            data.followers.forEach((ele)=>{
-                followers.push({userName:ele.user.userName,img:ele.user.profilePic});
+            data.followers.forEach((ele) => {
+                followers.push({
+                    userName: ele.user.userName,
+                    img: ele.user.profilePic
+                });
                 console.log(followers);
             });
-            data.following.forEach((ele)=>{
-                following.push({userName:ele.user.userName,img:ele.user.profilePic});
+            data.following.forEach((ele) => {
+                following.push({
+                    userName: ele.user.userName,
+                    img: ele.user.profilePic
+                });
                 console.log(following);
             });
             console.log(followers);
-    res.render("follow1", {
-         infofl: followers,
-         infofw:following,
-         status: "followers"
-     });
+            res.render("follow1", {
+                infofl: followers,
+                infofw: following,
+                status: "followers"
+            });
         }
     });
 });
@@ -376,29 +467,36 @@ app.post("/showfollowers/:showfollowers", async function (req, res) {
 
 app.post("/showfollowing/:showfollowing", async function (req, res) {
     console.log(req.params);
-    var following = [],followers = [];
+    var following = [],
+        followers = [];
     await detail.findOne({
         _id: req.params.showfollowing
     }, 'following followers').populate("following.user followers.user", "userName profilePic").exec(function (err, data) {
         if (data) {
             console.log(data.following);
-            data.followers.forEach((ele)=>{
-                followers.push({userName:ele.user.userName,img:ele.user.profilePic});
+            data.followers.forEach((ele) => {
+                followers.push({
+                    userName: ele.user.userName,
+                    img: ele.user.profilePic
+                });
                 console.log(followers);
             });
-            data.following.forEach((ele)=>{
-                following.push({userName:ele.user.userName,img:ele.user.profilePic});
+            data.following.forEach((ele) => {
+                following.push({
+                    userName: ele.user.userName,
+                    img: ele.user.profilePic
+                });
                 console.log(following);
             });
             console.log(following);
-    res.render("follow1", {
-        infofl: followers,
-        infofw:following,
-         status: "following"
-     });
+            res.render("follow1", {
+                infofl: followers,
+                infofw: following,
+                status: "following"
+            });
         }
     });
-   // res.sendStatus(200)
+    // res.sendStatus(200)
 });
 
 
@@ -425,14 +523,18 @@ app.post('/follow-user', async (req, res) => {
             _id: req.session.uid
         }, {
             $push: {
-                following: {user: req.body.id}
+                following: {
+                    user: req.body.id
+                }
             }
         });
         detail.updateOne({
             _id: req.body.id
         }, {
             $push: {
-                followers: {user: req.session.uid}
+                followers: {
+                    user: req.session.uid
+                }
             }
         }, () => {
             res.send('1');
@@ -442,14 +544,18 @@ app.post('/follow-user', async (req, res) => {
             _id: req.session.uid
         }, {
             $pull: {
-                following: {user: req.body.id}
+                following: {
+                    user: req.body.id
+                }
             }
         });
         detail.updateOne({
             _id: req.body.id
         }, {
             $pull: {
-                followers: {user: req.session.uid}
+                followers: {
+                    user: req.session.uid
+                }
             }
         }, () => {
             res.send('-1');
@@ -691,16 +797,16 @@ app.get('/users/:userInfo', (req, res) => {
         else if (user == null)
             res.sendStatus(404);
         else {
-            var flag=0;
-            for(i in user.followers){
+            var flag = 0;
+            for (i in user.followers) {
                 console.log(i);
-                if(user.followers[i].user==req.session.uid)
-                flag=1;
+                if (user.followers[i].user == req.session.uid)
+                    flag = 1;
             }
-            if(flag==0)
-            flag=-1;
+            if (flag == 0)
+                flag = -1;
             else
-            flag=1;
+                flag = 1;
             var val;
             if (req.params.userInfo == req.session.uun)
                 val = 1;
@@ -741,7 +847,7 @@ app.post('/forgot-password-email', (req, res) => {
                 userName: user.userName,
                 pid: payload.id,
                 token: token
-            }, (err, mail) => {                
+            }, (err, mail) => {
                 const mailOptions = {
                     from: 'weebstopia@gmail.com',
                     to: user.email,

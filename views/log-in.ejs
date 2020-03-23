@@ -7,8 +7,21 @@
   <meta name="viewport" content="width=device-width,minimum-scale=1.0,initial-scale=1,user-scalable=yes">
   <script src="../script.js"></script>
   <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../bootstrap-social.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretty-checkbox@3.0/dist/pretty-checkbox.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style>
+    .flex-container {
+  display: flex;
+  color:rgba(99, 95, 95, 0.911);
+}
+
+.flex-container > hr {
+  width:100%;
+  margin: 10px;
+  font-size: 30px;
+}
+  </style>
 </head>
 
 <body>
@@ -72,7 +85,15 @@
                   <button type="submit"
                     class="_24a1e9c7 dab9924c br2 pv2 ph3 fw5 f5 tc button button-reset pointer ma2 truncate ml0 no-underline e64d5a00 w-100">Login
                   </button>
-                </form>
+                </form><br>
+                <div class="flex-container">
+                  <hr>
+                  <span>Or</span>
+                  <hr>
+                </div><br>
+                <a class="btn btn-block btn-social btn-google" style="color:white;width:30%;margin:auto;" href="/auth/google">
+                  <span class="fa fa-google"></span>Google
+                </a>
                 <a href="/sign-up" class="_6126477b db center tc mt3 mb2 f5 fw6 black-50 hover-black-80">Sign up
                 </a>
               </div>
