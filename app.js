@@ -101,8 +101,6 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-var logMessage = "";
-
 
 passport.use(new GoogleStrategy({
         clientID: process.env.CLIENT_ID,
@@ -119,7 +117,6 @@ passport.use(new GoogleStrategy({
             console.log(user.profilePic);
             if(!user.profilePic){
                 await detail.update({_id:user.id},{$set:{profilePic:profile.photos[0].value,userName:profile.displayName,fullName:profile.displayName,email:profile._json.email}},{multi: true},function(err,d){
-                    logMessage="Google";
                     console.log("-----------------------------find or create-------------------------------------");
                     console.log(user);
                     console.log("--------------------------------------------------------------------------------");
@@ -161,6 +158,7 @@ app.get('/auth/google/secrets',
         failureRedirect: '/loginP'
     }),
     function (req, res) {
+        req.session.logMessage="Google";
         console.log("---------------------------------------User----------------------------------------");
         console.log(req.user);
         console.log("-----------------------------------------------------------------------------------");
@@ -676,7 +674,6 @@ app.post('/check-user', (req, res) => {
 });
 
 app.get('/log-out', (req, res) => {
-    logMessage="";
     req.session.destroy(() => {
         res.redirect('/');
     });
@@ -693,7 +690,7 @@ app.get('/settings', (req, res) => {
         detail.findById(req.session.uid, (err, user) => {
             res.render('settings', {
                 message: ['Account Settings'],
-                type:logMessage,
+                type:req.session.logMessage,
                 bg: ["primary"],
                 details: user
             });
@@ -705,6 +702,7 @@ app.post('/save-settings', async (req, res) => {
     var message = [],
         bg = []
     const user = await detail.findById(req.session.uid);
+    if(req.session.logMessage!="Google")
     if (!(req.body.newp1 == '' && req.body.newp2 == '')) {
         if (crypto.createHash('sha256').update(req.body.oldp).digest('hex').toString() != user.password) {
             message.push('Incorrect Password!');
@@ -764,7 +762,7 @@ app.post('/save-settings', async (req, res) => {
         detail.findById(req.session.uid, (err, user) => {
             res.render('settings', {
                 message: message,
-                type:logMessage,
+                type:req.session.logMessage,
                 bg: bg,
                 details: user
             });

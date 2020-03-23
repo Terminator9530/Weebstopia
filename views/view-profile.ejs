@@ -20,7 +20,12 @@
                 <li class="nav-item dropdown mr-2">
                     <a class="nav-item" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false">
+                        <% if(details.profilePic.includes('http')){ %>
                         <img src="<%= details.profilePic %>" width="50" height="50" style="border-radius: 50%;">
+                        <% } %>
+                        <% if(!(details.profilePic.includes('http'))){ %>
+                        <img src="../<%= details.profilePic %>" width="50" height="50" style="border-radius: 50%;">
+                        <% } %>
                     </a>
                 </li>
             </ul>
@@ -29,7 +34,12 @@
 
     <div class="jumbotron jumbotron-fluid">
         <div class="row">
+            <% if(details.profilePic.includes('http')){ %>
             <div class="col-2" style="margin-left: 70px;"><img src="<%= details.profilePic %>" width="200" height="200" style="border-radius: 50%;"></div>
+            <% } %>
+            <% if(!(details.profilePic.includes('http'))){ %>
+            <div class="col-2" style="margin-left: 70px;"><img src="../<%= details.profilePic %>" width="200" height="200" style="border-radius: 50%;"></div>
+            <% } %>
             <div class="col-4">
                 <h1><%= details.userName %></h1>
                 <h3>Email : <%= details.email %></h3>

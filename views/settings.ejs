@@ -71,12 +71,14 @@
                 <br />
                 <input type="text" class="form-control" style="width: 30%;" name="email" value="<%= details.email %>" />
                 <br />
+                <% if(type!="Google"){ %>
                 <input type="password" class="form-control" placeholder="Enter The Old Password" style="width: 30%;"
                     name="oldp" autocomplete="off"><br>
                 <input type="password" class="form-control" placeholder="Enter The New Password" style="width: 30%;"
                     name="newp1"><br>
                 <input type="password" class="form-control" placeholder="Reenter The New Password" style="width: 30%;"
                     name="newp2"><br>
+                <% } %>
 
                 <button type="submit" class="btn btn-primary">Update Profile</button>
             </center>
