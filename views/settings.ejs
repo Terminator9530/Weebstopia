@@ -54,11 +54,11 @@
         <%}%>
         <div class="jumbotron">
             <center>
-                <% if(type=="Google"){ %>
+                <% if(details.profilePic.includes('http')){ %>
                     <img id="blah" src="<%= details.profilePic %>" width=200 height=200 style="z-index:1;"
                         alt="your image" />
                 <% } %>
-                <% if(type!="Google"){ %>
+                <% if(!(details.profilePic.includes('http'))){ %>
                     <img id="blah" src="../<%= details.profilePic %>" width=200 height=200 style="z-index:1;"
                         alt="your image" />
                 <% } %>
