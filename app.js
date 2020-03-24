@@ -106,29 +106,29 @@ passport.use(new GoogleStrategy({
         callbackURL: "http://localhost:3000/auth/google/secrets"
     },
     async function (accessToken, refreshToken, profile, cb) {
-        console.log("--------------------------------------Profile----------------------------------------------------");
-        console.log(profile);
-        console.log("-------------------------------------------------------------------------------------------------");
+        //console.log("--------------------------------------Profile----------------------------------------------------");
+        //console.log(profile);
+        //console.log("-------------------------------------------------------------------------------------------------");
         await detail.findOrCreate({
             googleId: profile.id
         }, async function (err, user) {
-            console.log(user.profilePic);
+            //console.log(user.profilePic);
             if (!user.profilePic) {
                 await detail.update({
                     _id: user.id
                 }, {
                     $set: {
                         profilePic: profile.photos[0].value,
-                        userName: profile.displayName,
                         fullName: profile.displayName,
-                        email: profile._json.email
+                        email: profile._json.email,
+                        userName:""
                     }
                 }, {
                     multi: true
                 }, function (err, d) {
-                    console.log("-----------------------------find or create-------------------------------------");
-                    console.log(user);
-                    console.log("--------------------------------------------------------------------------------");
+                    //console.log("-----------------------------find or create-------------------------------------");
+                    //console.log(user);
+                    //console.log("--------------------------------------------------------------------------------");
                     return cb(err, user);
                 });
             } else
@@ -142,7 +142,7 @@ passport.use(new GoogleStrategy({
 
 
 app.get('/', (req, res) => {
-    //console.log(req.session);
+    ////console.log(req.session);
     if (!req.session.uid) {
         res.render('index');
     } else {
@@ -167,20 +167,29 @@ app.get('/auth/google/secrets',
     }),
     function (req, res) {
         req.session.logMessage = "Google";
-        console.log("---------------------------------------User----------------------------------------");
-        console.log(req.user);
-        console.log("-----------------------------------------------------------------------------------");
+        //console.log("---------------------------------------User----------------------------------------");
+        //console.log(req.user);
+        //console.log("-----------------------------------------------------------------------------------");
         // Successful authentication, redirect secrets.
         detail.findOne({
             _id: req.user.id
-        }, function (err, data) {
+        }, async function (err, data) {
             req.session.uid = data._id;
-            req.session.uun = data.userName;
             req.session.upp = data.profilePic;
             req.session.email = data.email;
-            console.log(req.session);
-            res.render("username");
-            //res.redirect("/");
+            if(data.userName!="")
+            req.session.uun = data.userName;
+            //console.log(req.session);
+            if(!req.session.uun)
+            res.render("username",{
+                message:["Username"],
+                details:data,
+                bg:["success"]
+            });
+            else
+            {
+                res.redirect("/");
+            }
         });
     }
 );
@@ -204,13 +213,13 @@ app.post("/add", function (req, res) {
             for (i in data.list) {
                 if (req.body.listvalue == data.list[i].listname) {
                     index_i = i;
-                    console.log(index_i);
-                    console.log("aa gaya");
+                    //console.log(index_i);
+                    //console.log("aa gaya");
                     for (j in data.list[i].lists) {
                         if (req.body.id == data.list[i].lists[j].id) {
                             index_j = j;
                             flag = 1;
-                            //console.log("index_i,index_j");
+                            ////console.log("index_i,index_j");
                             break;
                         }
                     }
@@ -218,7 +227,7 @@ app.post("/add", function (req, res) {
                 }
 
             }
-            console.log(flag);
+            //console.log(flag);
             if (flag) {
                 //http://api.jikan.moe/v3/anime/1535
             } else {
@@ -227,13 +236,13 @@ app.post("/add", function (req, res) {
                     image_url: req.body.img,
                     title: req.body.title
                 });
-                //console.log(data.list[index_i].lists);
+                ////console.log(data.list[index_i].lists);
 
                 await detail.updateOne({
                     _id: req.session.uid
                 }, data);
                 /*await detail.findOne({_id:req.session.uid},function(err,d){
-                    console.log(data.list[0].lists);
+                    //console.log(data.list[0].lists);
                 });*/
             }
         } else {
@@ -270,7 +279,7 @@ app.get("/deletelist", function (req, res) {
 });
 
 app.post("/del", async function (req, res) {
-    console.log(req.body);
+    //console.log(req.body);
     for (i in req.body) {
         await detail.update({
             _id: req.session.uid
@@ -299,13 +308,13 @@ app.get("/editlist", function (req, res) {
 });
 
 app.post("/deleteListItems/:lstName", function (req, res) {
-    console.log(req.body, req.params);
+    //console.log(req.body, req.params);
     detail.findOne({
         _id: req.session.uid
     }, 'list', function (err, data) {
-        console.log(data);
+        //console.log(data);
         for (i in data.list) {
-            console.log(data.list[i].listname);
+            //console.log(data.list[i].listname);
             if (data.list[i].listname == req.params.lstName) {
                 if (data.list[i].listname != req.body[req.params.lstName])
                     data.list[i].listname = req.body[req.params.lstName];
@@ -316,14 +325,14 @@ app.post("/deleteListItems/:lstName", function (req, res) {
                 break;
             }
         }
-        //console.log(data.list);
+        ////console.log(data.list);
         detail.updateOne({
             _id: req.session.uid
         }, data, function (err, d) {
             detail.findOne({
                 _id: req.session.uid
             }, function (err, d1) {
-                //console.log(d1.list);
+                ////console.log(d1.list);
                 res.redirect("/editlist");
             });
         });
@@ -334,7 +343,7 @@ app.post("/deleteListItems/:lstName", function (req, res) {
 /*------------------------create list------------------------------*/
 
 app.post("/create-list", function (req, res) {
-    console.log(req.body);
+    //console.log(req.body);
     detail.findOne({
         _id: req.session.uid
     }, function (err, data) {
@@ -345,9 +354,9 @@ app.post("/create-list", function (req, res) {
                 break;
             }
         }
-        console.log(flag);
+        //console.log(flag);
         if (!flag) {
-            console.log("here");
+            //console.log("here");
 
             detail.updateOne({
                 _id: req.session.uid
@@ -365,13 +374,13 @@ app.post("/create-list", function (req, res) {
                         message: "Updated"
                     });
                 } else {
-                    console.log(err);
+                    //console.log(err);
                 }
             });
             /*await detail.findOne({
                 _id: req.session.uid
             }, function (err, d) {
-                console.log(d.list);
+                //console.log(d.list);
                 res.send("Test");
             });*/
         } else {
@@ -392,22 +401,22 @@ app.post("/showfollowers", async function (req, res) {
         _id: req.session.uid
     }, 'followers following').populate("followers.user following.user", "userName profilePic").exec(function (err, data) {
         if (data) {
-            //console.log(data.followers);
+            ////console.log(data.followers);
             data.followers.forEach((ele) => {
                 followers.push({
                     userName: ele.user.userName,
                     img: ele.user.profilePic
                 });
-                console.log(followers);
+                //console.log(followers);
             });
             data.following.forEach((ele) => {
                 following.push({
                     userName: ele.user.userName,
                     img: ele.user.profilePic
                 });
-                console.log(following);
+                //console.log(following);
             });
-            //console.log(followers);
+            ////console.log(followers);
             res.render("follow", {
                 infofl: followers,
                 infofw: following,
@@ -426,22 +435,22 @@ app.post("/showfollowing", async function (req, res) {
         _id: req.session.uid
     }, 'following followers').populate("following.user followers.user", "userName profilePic").exec(function (err, data) {
         if (data) {
-            // console.log(data.following);
+            // //console.log(data.following);
             data.followers.forEach((ele) => {
                 followers.push({
                     userName: ele.user.userName,
                     img: ele.user.profilePic
                 });
-                console.log(followers);
+                //console.log(followers);
             });
             data.following.forEach((ele) => {
                 following.push({
                     userName: ele.user.userName,
                     img: ele.user.profilePic
                 });
-                console.log(following);
+                //console.log(following);
             });
-            //console.log(following);
+            ////console.log(following);
             res.render("follow", {
                 infofl: followers,
                 infofw: following,
@@ -456,29 +465,29 @@ app.post("/showfollowing", async function (req, res) {
 /*--------------------------show followers not login-------------------------*/
 
 app.post("/showfollowers/:showfollowers", async function (req, res) {
-    console.log(req.params, req.url);
+    //console.log(req.params, req.url);
     var followers = [],
         following = [];
     await detail.findOne({
         _id: req.params.showfollowers
     }, 'followers following').populate("followers.user following.user", "userName profilePic").exec(function (err, data) {
         if (data) {
-            console.log(data.followers);
+            //console.log(data.followers);
             data.followers.forEach((ele) => {
                 followers.push({
                     userName: ele.user.userName,
                     img: ele.user.profilePic
                 });
-                console.log(followers);
+                //console.log(followers);
             });
             data.following.forEach((ele) => {
                 following.push({
                     userName: ele.user.userName,
                     img: ele.user.profilePic
                 });
-                console.log(following);
+                //console.log(following);
             });
-            console.log(followers);
+            //console.log(followers);
             res.render("follow1", {
                 infofl: followers,
                 infofw: following,
@@ -491,29 +500,29 @@ app.post("/showfollowers/:showfollowers", async function (req, res) {
 /*--------------------------show following not login-------------------------*/
 
 app.post("/showfollowing/:showfollowing", async function (req, res) {
-    console.log(req.params);
+    //console.log(req.params);
     var following = [],
         followers = [];
     await detail.findOne({
         _id: req.params.showfollowing
     }, 'following followers').populate("following.user followers.user", "userName profilePic").exec(function (err, data) {
         if (data) {
-            console.log(data.following);
+            //console.log(data.following);
             data.followers.forEach((ele) => {
                 followers.push({
                     userName: ele.user.userName,
                     img: ele.user.profilePic
                 });
-                console.log(followers);
+                //console.log(followers);
             });
             data.following.forEach((ele) => {
                 following.push({
                     userName: ele.user.userName,
                     img: ele.user.profilePic
                 });
-                console.log(following);
+                //console.log(following);
             });
-            console.log(following);
+            //console.log(following);
             res.render("follow1", {
                 infofl: followers,
                 infofw: following,
@@ -531,7 +540,7 @@ app.post("/searchlist", function (req, res) {
     detail.findOne({
         _id: req.session.uid
     }, function (err, data) {
-        console.log(data.list, data.list.length, data.list[0].listname);
+        //console.log(data.list, data.list.length, data.list[0].listname);
         // res.send("found");
         res.send({
             a: data.list
@@ -713,7 +722,7 @@ app.post('/save-settings', async (req, res) => {
     var message = [],
         bg = []
     const user = await detail.findById(req.session.uid);
-    if (req.session.logMessage != "Google")
+    if (req.session.logMessage != "Google"){
         if (!(req.body.newp1 == '' && req.body.newp2 == '')) {
             if (crypto.createHash('sha256').update(req.body.oldp).digest('hex').toString() != user.password) {
                 message.push('Incorrect Password!');
@@ -753,6 +762,23 @@ app.post('/save-settings', async (req, res) => {
             user.userName = req.body.userName;
         }
     }
+    }
+    else{
+        const found = await detail.findOne({
+            userName: req.body.userName
+        });
+        if (found) {
+            //console.log("found");
+            message.push('Account with that user name already exists!');
+            bg.push('danger');
+        } else {
+            //console.log("not found");
+            message.push('User name updated successfully!');
+            bg.push('success');
+            user.userName = req.body.userName;
+        }
+    }
+
     if (req.files) {
         const pic = req.files.profilePic;
         if ((req.session.upp.includes('http')) && (req.session.upp != 'profile-pic-default.png')) {
@@ -766,18 +792,48 @@ app.post('/save-settings', async (req, res) => {
     }
     await detail.updateOne({
         _id: user._id
-    }, user);
-    req.session.upp = user.profilePic;
-    req.session.uun = user.userName;
-    req.session.save(() => {
-        detail.findById(req.session.uid, (err, user) => {
-            res.render('settings', {
-                message: message,
-                type: req.session.logMessage,
-                bg: bg,
-                details: user
+    }, user,function(err){
+        req.session.upp = user.profilePic;
+        req.session.uun = user.userName;
+        //console.log(user);
+        //console.log(req.session);
+    if(req.session.logMessage!="Google")
+    {
+        req.session.save(() => {
+            detail.findById(req.session.uid, (err, user) => {
+                res.render('settings', {
+                    message: message,
+                    type: req.session.logMessage,
+                    bg: bg,
+                    details: user
+                });
             });
         });
+    }
+    else{
+        ////console.log("--------------------------------------------",bg,"--------------------------------------------------------");
+            ////console.log("-----------------------------------------",bg.includes("danger"),"--------------------------------------------");
+            if(req.body["hello"]=="onetime")
+            if(bg.includes("danger")){
+                res.render('username', {
+                    message: message,
+                    bg: bg,
+                    details: user
+                });
+            }
+            else{
+                res.redirect("/");
+            }
+            if(!(req.body["hello"]=="onetime"))
+            detail.findById(req.session.uid, (err, user) => {
+                res.render('settings', {
+                    message: message,
+                    type: req.session.logMessage,
+                    bg: bg,
+                    details: user
+                });
+            });
+    }
     });
 });
 
@@ -798,12 +854,12 @@ app.get('/search-user', (req, res) => {
 });
 
 app.post('/showprofile', (req, res) => {
-    console.log(req.body);
+    //console.log(req.body);
     detail.findOne({
         _id: req.body["hello"]
     }, function (err, user) {
         res.redirect("/users/" + user.userName)
-        console.log(user);
+        //console.log(user);
     });
 });
 
@@ -816,7 +872,7 @@ app.post('/search-user', (req, res) => {
 });
 
 app.get('/users/:userInfo', (req, res) => {
-    console.log(req.url);
+    //console.log(req.url);
     detail.findOne({
         userName: req.params.userInfo
     }, (err, user) => {
@@ -827,7 +883,7 @@ app.get('/users/:userInfo', (req, res) => {
         else {
             var flag = 0;
             for (i in user.followers) {
-                console.log(i);
+                //console.log(i);
                 if (user.followers[i].user == req.session.uid)
                     flag = 1;
             }
@@ -962,7 +1018,7 @@ app.post('/reset-password', function (req, res) {
 
 
 app.listen(3000, () => {
-    console.log('Server started!');
+    //console.log('Server started!');
 });
 
 

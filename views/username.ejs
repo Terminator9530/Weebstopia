@@ -59,7 +59,7 @@
                         alt="your image" />
                 <% } %>
                 <% if(!(details.profilePic.includes('http'))){ %>
-                    <img id="blah" src="../<%= details.profilePic %>" width=200 height=200 style="z-index:1;"
+                    <img id="blah" src="../../../<%= details.profilePic %>" width=200 height=200 style="z-index:1;"
                         alt="your image" />
                 <% } %>
                 <div class="upload-btnn-wrapper">
@@ -67,9 +67,9 @@
                         <input type="file" name="profilePic" id="imgInp">
                 </div>
                 <br /><br/>
-                <input type="text" class="form-control" style="width: 30%;" name="userName" value="<%= details.userName %>" />
+                <input type="text" class="form-control" style="width: 30%;" name="userName" placeholder="Username" value="<%= details.userName %>" />
                 <br />
-                <button type="submit" class="btn btn-primary">Update Profile</button>
+                <button type="submit" class="btn btn-primary" name="hello" value="onetime">Update Profile</button>
             </center>
         </div>
     </form>
