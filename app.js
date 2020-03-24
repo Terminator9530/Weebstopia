@@ -1019,6 +1019,30 @@ app.post('/reset-password', function (req, res) {
     });
 });
 
+//---------------------------------------------------Check email-------------------------------------------------------//
+
+app.post("/checkEmail",function(req,res){
+    console.log(req.body);
+    detail.findOne({email:req.body.email},function(err,data){
+        if(data)
+        res.send("Email Already Exists");
+        else
+        res.send("Email Not Already Exists");
+    });
+});
+
+//---------------------------------------------------Check username-------------------------------------------------------//
+
+app.post("/checkUserName",function(req,res){
+    console.log(req.body);
+    detail.findOne({userName:req.body.userName},function(err,data){
+        if(data)
+        res.send("UserName Already Exists");
+        else
+        res.send("UserName Not Already Exists");
+    });
+});
+
 
 // -------------------------------------------------- listen -------------------------------------------------- //
 
