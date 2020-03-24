@@ -779,6 +779,13 @@ app.post('/save-settings', async (req, res) => {
             user.userName = req.body.userName;
         }
     }
+    else{
+        if(req.body.userName=="")
+        {
+            message.push('Please Fill The Username');
+            bg.push('danger');
+        }
+    }
     }
 
     if (req.files) {
