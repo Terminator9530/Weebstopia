@@ -46,13 +46,7 @@ app.use(session({
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(express.static('public/index'));
-app.use(express.static('public/log-in'));
-app.use(express.static('public/profile'));
-app.use(express.static('public/search'));
-app.use(express.static('public/settings'));
-app.use(express.static('public/sign-up'));
 app.use(express.static('public/upload'));
-app.use(express.static('public/view-profile'));
 app.use(bodyParser.urlencoded({
     extended: true
 }));
@@ -146,7 +140,7 @@ passport.use(new GoogleStrategy({
 
 app.get('/', (req, res) => {
     ////console.log(req.session);
-    if (!req.session.uid) {
+    if (!req.session.uun) {
         res.render('index');
     } else {
         detail.findById(req.session.uid, (err, user) => {
@@ -205,7 +199,7 @@ app.get("/searchanime", function (req, res) {
 });
 
 app.post("/add", function (req, res) {
-    if (!req.session.uid)
+    if (!req.session.uun)
         return res.redirect("/loginP");
     detail.findOne({
         _id: req.session.uid
@@ -605,7 +599,7 @@ app.post('/follow-user', async (req, res) => {
 
 
 app.get('/sign-up', (req, res) => {
-    if (!req.session.uid) {
+    if (!req.session.uun) {
         res.render('sign-up', {
             message: '',
             bg: 'white'
@@ -662,7 +656,7 @@ app.post('/save-user', (req, res) => {
 
 
 app.get('/log-in', (req, res) => {
-    if (!req.session.uid) {
+    if (!req.session.uun) {
         res.render('log-in', {
             message: '',
             bg: 'white'
@@ -707,7 +701,7 @@ app.get('/log-out', (req, res) => {
 
 
 app.get('/settings', (req, res) => {
-    if (!req.session.uid) {
+    if (!req.session.uun) {
         res.redirect('/');
     } else {
         detail.findById(req.session.uid, (err, user) => {
