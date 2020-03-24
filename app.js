@@ -764,6 +764,7 @@ app.post('/save-settings', async (req, res) => {
     }
     }
     else{
+        if (req.body.userName != user.userName) {
         const found = await detail.findOne({
             userName: req.body.userName
         });
@@ -777,6 +778,7 @@ app.post('/save-settings', async (req, res) => {
             bg.push('success');
             user.userName = req.body.userName;
         }
+    }
     }
 
     if (req.files) {
