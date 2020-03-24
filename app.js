@@ -19,8 +19,6 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const findOrCreate = require('mongoose-findorcreate');
 const download = require('image-downloader')
 
-
-
 // -------------------------------------------------- server settings -------------------------------------------------- //
 
 
@@ -115,16 +113,26 @@ passport.use(new GoogleStrategy({
             googleId: profile.id
         }, async function (err, user) {
             console.log(user.profilePic);
-            if(!user.profilePic){
-                await detail.update({_id:user.id},{$set:{profilePic:profile.photos[0].value,userName:profile.displayName,fullName:profile.displayName,email:profile._json.email}},{multi: true},function(err,d){
+            if (!user.profilePic) {
+                await detail.update({
+                    _id: user.id
+                }, {
+                    $set: {
+                        profilePic: profile.photos[0].value,
+                        userName: profile.displayName,
+                        fullName: profile.displayName,
+                        email: profile._json.email
+                    }
+                }, {
+                    multi: true
+                }, function (err, d) {
                     console.log("-----------------------------find or create-------------------------------------");
                     console.log(user);
                     console.log("--------------------------------------------------------------------------------");
-                    return cb(err, user); 
+                    return cb(err, user);
                 });
-            }
-            else
-            return cb(err, user);
+            } else
+                return cb(err, user);
         });
     }
 ));
@@ -158,18 +166,21 @@ app.get('/auth/google/secrets',
         failureRedirect: '/loginP'
     }),
     function (req, res) {
-        req.session.logMessage="Google";
+        req.session.logMessage = "Google";
         console.log("---------------------------------------User----------------------------------------");
         console.log(req.user);
         console.log("-----------------------------------------------------------------------------------");
         // Successful authentication, redirect secrets.
-        detail.findOne({_id:req.user.id},function(err,data){
+        detail.findOne({
+            _id: req.user.id
+        }, function (err, data) {
             req.session.uid = data._id;
             req.session.uun = data.userName;
             req.session.upp = data.profilePic;
             req.session.email = data.email;
             console.log(req.session);
-            res.redirect("/");
+            res.render("username");
+            //res.redirect("/");
         });
     }
 );
@@ -690,7 +701,7 @@ app.get('/settings', (req, res) => {
         detail.findById(req.session.uid, (err, user) => {
             res.render('settings', {
                 message: ['Account Settings'],
-                type:req.session.logMessage,
+                type: req.session.logMessage,
                 bg: ["primary"],
                 details: user
             });
@@ -702,20 +713,20 @@ app.post('/save-settings', async (req, res) => {
     var message = [],
         bg = []
     const user = await detail.findById(req.session.uid);
-    if(req.session.logMessage!="Google")
-    if (!(req.body.newp1 == '' && req.body.newp2 == '')) {
-        if (crypto.createHash('sha256').update(req.body.oldp).digest('hex').toString() != user.password) {
-            message.push('Incorrect Password!');
-            bg.push('danger');
-        } else if (req.body.newp1 != req.body.newp2) {
-            message.push('Passwords do not match!');
-            bg.push('danger');
-        } else {
-            message.push('Password updated successfully!');
-            bg.push('success');
-            user.password = crypto.createHash('sha256').update(req.body.newp1).digest('hex').toString();
+    if (req.session.logMessage != "Google")
+        if (!(req.body.newp1 == '' && req.body.newp2 == '')) {
+            if (crypto.createHash('sha256').update(req.body.oldp).digest('hex').toString() != user.password) {
+                message.push('Incorrect Password!');
+                bg.push('danger');
+            } else if (req.body.newp1 != req.body.newp2) {
+                message.push('Passwords do not match!');
+                bg.push('danger');
+            } else {
+                message.push('Password updated successfully!');
+                bg.push('success');
+                user.password = crypto.createHash('sha256').update(req.body.newp1).digest('hex').toString();
+            }
         }
-    }
     if (req.body.email != user.email) {
         const found = await detail.findOne({
             email: req.body.email
@@ -744,7 +755,7 @@ app.post('/save-settings', async (req, res) => {
     }
     if (req.files) {
         const pic = req.files.profilePic;
-        if ((req.session.upp.includes('http'))&&(req.session.upp != 'profile-pic-default.png')) {
+        if ((req.session.upp.includes('http')) && (req.session.upp != 'profile-pic-default.png')) {
             fs.unlink(__dirname + '/public/upload/' + req.session.upp);
         }
         pic.name = 'profile-pic-' + req.session.uun + '-' + pic.name;
@@ -762,7 +773,7 @@ app.post('/save-settings', async (req, res) => {
         detail.findById(req.session.uid, (err, user) => {
             res.render('settings', {
                 message: message,
-                type:req.session.logMessage,
+                type: req.session.logMessage,
                 bg: bg,
                 details: user
             });
