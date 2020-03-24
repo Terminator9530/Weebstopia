@@ -17,7 +17,6 @@ const passport = require('passport');
 const passportLocalMongoose = require('passport-local-mongoose');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const findOrCreate = require('mongoose-findorcreate');
-const download = require('image-downloader')
 
 // -------------------------------------------------- server settings -------------------------------------------------- //
 
@@ -26,7 +25,11 @@ const app = express();
 dotenv.config();
 app.use(passport.initialize());
 app.use(passport.session());
-mongoose.connect(process.env.CONN, {
+/*mongoose.connect(process.env.CONN, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+});*/
+mongoose.connect("mongodb://localhost:27017/Users", {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
