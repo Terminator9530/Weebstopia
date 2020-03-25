@@ -844,9 +844,33 @@ app.post('/save-settings', async (req, res) => {
 });
 
 app.post('/delete-account', async (req, res) => {
-    if (req.session.upp != 'profile-pic-default.png') {
+    if ((!(req.session.upp.includes('http')))&&(req.session.upp != 'profile-pic-default.png')) {
         fs.unlink(__dirname + '/public/upload/' + req.session.upp);
     }
+    await detail.findOne({
+        _id: req.session.uid
+    }, 'followers following').populate("followers.user following.user", "userName profilePic").exec(async function (err, data) {
+        if (data) {
+            data.followers.forEach(async (ele) => {
+                await detail.update({
+                    userName: ele.user.userName
+                }, {
+                    $pull: {
+                        following:{user:req.session.uid}
+                    }
+                });
+            });
+            data.following.forEach(async (ele) => {
+                await detail.update({
+                    userName: ele.user.userName
+                }, {
+                    $pull: {
+                        followers:{user:req.session.uid}
+                    }
+                });
+            });
+        }
+    });
     await detail.findByIdAndDelete(req.session.uid);
     res.redirect('/log-out');
 });
