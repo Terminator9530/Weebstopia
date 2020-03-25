@@ -1048,7 +1048,7 @@ app.post("/checkUserName",function(req,res){
 
 
 app.listen(3000, () => {
-    //console.log('Server started!');
+    console.log('Server started!');
 });
 
 
