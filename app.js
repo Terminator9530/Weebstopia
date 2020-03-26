@@ -1049,7 +1049,7 @@ app.post("/checkEmail",function(req,res){
     console.log(req.body);
     detail.findOne({email:req.body.email},function(err,data){
         if(data)
-        res.send("Email Already Exists");
+        res.send("Email Already Taken Or Invalid");
         else
         res.send("Email Not Already Exists");
     });
