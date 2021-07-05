@@ -25,14 +25,14 @@ const app = express();
 dotenv.config();
 app.use(passport.initialize());
 app.use(passport.session());
-/*mongoose.connect(process.env.CONN, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-});*/
-mongoose.connect("mongodb://localhost:27017/Users", {
+mongoose.connect(process.env.CONN, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
+// mongoose.connect("mongodb://localhost:27017/Users", {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true
+// });
 mongoose.set("useCreateIndex", true);
 app.use(session({
     secret: process.env.SESSION_SECRET,
