@@ -1071,7 +1071,7 @@ app.post("/checkUserName",function(req,res){
 // -------------------------------------------------- listen -------------------------------------------------- //
 
 
-app.listen(3000, () => {
+app.listen(process.env.PORT, () => {
     console.log('Server started!');
 });
 
