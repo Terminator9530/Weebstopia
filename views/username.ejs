@@ -59,7 +59,7 @@
                         alt="your image" />
                 <% } %>
                 <% if(!(details.profilePic.includes('http'))){ %>
-                    <img id="blah" src="../<%= details.profilePic %>" width=200 height=200 style="z-index:1;"
+                    <img id="blah" src="../../../<%= details.profilePic %>" width=200 height=200 style="z-index:1;"
                         alt="your image" />
                 <% } %>
                 <div class="upload-btnn-wrapper">
@@ -67,52 +67,12 @@
                         <input type="file" name="profilePic" id="imgInp">
                 </div>
                 <br /><br/>
-                <input type="text" class="form-control" style="width: 30%;" name="userName" value="<%= details.userName %>" />
+                <input type="text" class="form-control" style="width: 30%;" name="userName" placeholder="Username" value="<%= details.userName %>" />
                 <br />
-                <% if(type!="Google"){ %>
-                <input type="text" class="form-control" style="width: 30%;" name="email" value="<%= details.email %>" />
-                <br />
-                <input type="password" class="form-control" placeholder="Enter The Old Password" style="width: 30%;"
-                    name="oldp" autocomplete="off"><br>
-                <input type="password" class="form-control" placeholder="Enter The New Password" style="width: 30%;"
-                    name="newp1"><br>
-                <input type="password" class="form-control" placeholder="Reenter The New Password" style="width: 30%;"
-                    name="newp2"><br>
-                <% } %>
-
-                <button type="submit" class="btn btn-primary">Update Profile</button>
+                <button type="submit" class="btn btn-primary" name="hello" value="onetime">Update Profile</button>
             </center>
         </div>
     </form>
-
-    <!-- Button trigger modal -->
-    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal">
-        Delete Account
-    </button>
-
-    <!-- Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Delete account</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to delete your account?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
-                    <form action="/delete-account" method="post">
-                        <button type="submit" class="btn btn-primary">Yes</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
 
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>

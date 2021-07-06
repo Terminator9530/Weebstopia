@@ -12,7 +12,6 @@
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
     integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous">
   </script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
   <style>
     #search-box:focus {
@@ -25,18 +24,6 @@
 
     #default-search {
       min-height: 75vh;
-    }
-
-    .makebuttonlink {
-      background: none !important;
-      border: none;
-      padding: 0 !important;
-      /*optional*/
-      font-family: arial, sans-serif;
-      /*input has OS specific font-family*/
-      color: #069;
-      text-decoration: none;
-      cursor: pointer;
     }
 
     ::placeholder {
@@ -54,12 +41,14 @@
       /* Microsoft Edge */
       color: white;
     }
-    input[type="text"]{
-      color:white;
+
+    input[type="text"] {
+      color: white;
     }
+
     .polaroid {
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-        }
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    }
   </style>
 
 </head>
@@ -67,21 +56,55 @@
 <body>
 
   <div class="container-fluid p-5 bg-dark input-group">
-    <input type="text" id="search-box" placeholder="Search User"
+    <input type="text" id="search-box" placeholder="Search Anime"
       class="border border-dark rounded-left border-0 bg-secondary pl-2" autofocus>
     <button class="border border-dark rounded-right border-0 bg-secondary" id="search-button"><img src="search.png"
         alt="Search" height="35" width="35" /></button>
+  </div>
+
+  <div class="d-flex justify-content-around p-3">
+    <button type="button" class="btn btn-secondary" id="previous-button">Previous</button>
+    <button type="button" class="btn btn-secondary" id="next-button">Next</button>
   </div>
 
   <div class="d-flex justify-content-center pt-5">
     <img id="loader" src="loader.gif" alt="Loading..." />
   </div>
 
-  <div id="display-container">
+  <div id="display-container" class="container-fluid d-flex justify-content-around" style="margin:0px">
     <div id="default-search" class="d-flex align-items-center justify-content-center">
       <p class="h6 text-muted">Your search will appear here...</p>
     </div>
+
+
   </div>
+
+
+
+  <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalCenterTitle">Select the List</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <select id="opt">
+
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button id="save" type="button" class="btn btn-primary">Add To List</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"
     integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -91,49 +114,7 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
     integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
   </script>
-  <script src="search.js"></script>
+  <script src="searchanim.js"></script>
 </body>
 
-<script>
-  $("#loader").hide(0);
-
-$(document).ready(function () {
-
-    var content = "";
-    var userSearch;
-
-    $("#search-button").click(search);
-    $("#search-box").keypress(function (event) {
-        if (event.which == '13')
-            search();
-    });
-
-    function search() {
-
-        $("#display-container").html("");
-        $("#loader").show(250);
-        userSearch = $("#search-box").val();
-        display();
-
-    }
-
-    function display() {
-
-        $.post('/search-user', {
-            userSearch: userSearch
-        }, function (data) {
-            $("#display-container").html("");
-            $("#display-container").addClass("row");
-            data.forEach(function (item) {
-                content += "<a class='col-2' href='/users/" + item.userName + "'> <img height='250' width='250' src='" + item.profilePic + "' /> <br> <p>" + item.userName + "</p> </a>";
-            });
-            $("#loader").hide(250);
-            $("#display-container").append(content);
-            content = "";
-        });
-
-    }
-
-});
-</script>
 </html>

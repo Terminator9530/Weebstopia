@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretty-checkbox@3.0/dist/pretty-checkbox.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>Delete</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+
+<body onload="del()">
+    <center>
+            <div>
+                <form action="/del" method="POST" id="f1">
+                <table id="checkList">
+                    <tr>
+                        <th>S.no</th>
+                        <th>List Name</th>
+                        <th>Delete</th>
+                    </tr>
+                </table>
+            </div><br><br>
+            <button id="alert" type="button" class="btn btn-danger">Delete</button><br><br>
+    </center>
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
+    aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Alert!!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the list?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+                <button id="delList" type="submit" class="btn btn-success">Yes</button></form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous">
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
+    </script>
+
+    <script>
+        var lenList;
+        function del() {
+            $.post('/searchlist', function (data, result) {
+                console.log(data.a[0].listname);
+                lenList = data.a.length;
+                for (i in data.a) {
+                    console.log(i);
+                    $("#checkList").append(
+                        `<tr><td>${parseInt(1)+parseInt(i)}</td><td>${ data.a[i].listname}</td>
+                            <td>
+                                <div class="pretty p-icon p-round p-tada">
+                                    <input type="checkbox" name="${data.a[i].listname}">
+                                    <div class="state p-danger">
+                                        <i class="icon fa fa-trash"></i>
+                                        <label></label>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>`
+                    );
+                }
+            });
+        }
+        $("f1").submit(function(e){
+            e.preventDefault();
+        });
+        $("#delList").click(function(){
+            document.getElementById("f1").submit();
+        });
+
+        $("#alert").click(function(){
+            $("#exampleModalCenter").modal('show');
+        });
+    </script>
+</body>
+
+</html>
