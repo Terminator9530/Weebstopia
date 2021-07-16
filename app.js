@@ -10,6 +10,7 @@ const crypto = require('crypto');
 const MongoStore = require('connect-mongo')(session);
 const upload = require('express-fileupload');
 const fs = require('fs').promises;
+const fsSync = require('fs');
 const dotenv = require('dotenv');
 const jwt = require('jwt-simple');
 const nodemailer = require('nodemailer');
@@ -787,11 +788,16 @@ app.post('/save-settings', async (req, res) => {
 
     if (req.files) {
         const pic = req.files.profilePic;
+        console.log(pic);
+        let dir = __dirname + '/public/upload/';
         if ((req.session.upp.includes('http')) && (req.session.upp != 'profile-pic-default.png')) {
-            fs.unlink(__dirname + '/public/upload/' + req.session.upp);
+            fs.unlink(dir + req.session.upp);
         }
         pic.name = 'profile-pic-' + req.session.uun + '-' + pic.name;
-        await pic.mv(__dirname + '/public/upload/' + pic.name);
+        if (!fsSync.existsSync(dir)){
+            fsSync.mkdirSync(dir);
+        }
+        await pic.mv(dir + pic.name);
         message.push('Profile picture updated successfully!');
         bg.push('success');
         user.profilePic = pic.name;
